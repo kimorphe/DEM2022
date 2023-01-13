@@ -1,0 +1,163 @@
+<!doctype HTML>
+
+<html>
+<header>
+	<title>CG-MD開発2022年度</title>
+	<meta charset="utf-8">
+        <script type="text/x-mathjax-config">
+                MathJax.Hub.Config({TeX:{equationNumbers:{autoNumber:"AMS"}}});
+        </script>
+        <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML,/www_func/MathJax/MyConfig.js">
+        </script>
+
+</header>
+<body>
+<center>
+	<h1> CG-MD Modelling</h1>
+	-単結晶のswelling curveに基づく水和エネルギーのモデル化-
+</center>
+<h2>Journal</h2>
+<ul>
+<li> 01/13(Thr)<br>
+当面の目標として，数値解析に用いることのできる水和エネルギーモデルの定式化を行う．
+そのために，CG system(粗視化粒子系)の自由エネルギーを次のように定義しなおす．
+\begin{equation}
+	G=U_{LJ}+U_{hyd}
+	\label{eqn:Gtot}
+\end{equation}
+ここに\(G_{LJ}\)は粒子間相互作用エネルギーを\(U_{hyd}\)は水和エネルギーを表す．
+CG系の化学ポテンシャル\(\mu\)は式(\ref{eqn:Gtot})の水分子数\(N\)に関する微分として
+次のように表される．
+\begin{equation}
+	\mu=
+	\frac{\partial G}{\partial N}
+	=
+	\frac{\partial U_{LJ}}{\partial N}
+	+
+	\frac{\partial U_{hyd}}{\partial N}
+	\label{eqn:mu_sys}
+\end{equation}
+CG系が平衡状態にあるとき，\(\mu\)は外界の化学ポテンシャル\(\mu_{ex}\)とつりあう．すなわち
+\begin{equation}
+	\mu = \mu_{ex}
+	\label{eqn:equiv_mu}
+\end{equation}
+が成り立つ．
+\(\mu_ex\)は，粘土含水系がおかれた環境の相対湿度\(r_H\)と次の関係がある．
+\begin{equation}
+	r_H 
+	=
+	\frac{\phi(P^{sat}_w)}{\phi(P_w)}	
+	\exp\left( -\frac{\mu^{sat}_w-\mu_w }{RT} \right)
+	\label{eqn:rH}
+\end{equation}
+ただし，\(R\)は気体定数，\(T\)は温度，\(\mu_w\)$と\(P_w\)は，それぞれ
+粒子浴(ここでは外界の水分溜)の化学ポテンシャルと蒸気圧を表し，
+satは飽和状態での量であることを意味する．また，\(\phi\)はフガシティー
+係数(fugacity coefficient)を表し，\(r_H\)は0から1の値をとり，パーセント表示する場合には
+\(100 r_H\)とする．
+相対湿度\(r_H\)と積層した粘土分子の層間距離(basal spacing)\(d\)の関係は
+粉末X線回折(XRD:X-ray diffraction)試験によって調べられており，
+Na型モンモリロナイトでは，相対湿度の増加にともない
+無水状態の0層膨潤から3層膨潤状態まで，階段状に変化することが知られている．
+従って，層間距離を相対湿度の関数として
+\begin{equation}
+	d=d(r_H; T,P)
+	\label{eqn:d_rH}
+\end{equation}
+と表すことにする．ここで，式(\ref{eqn:d_rH})の右辺は，
+層間距離\(d\)$はパラメータ\(T\)と\(P\)を含む\(r_H\)の関数であること
+を示し，\(T\)や\(P\)の変化が無視できるときには省略し，単に\(d=d(r_H)\)と書く．
+XRD試験で測定した式(\ref{eqn:d_rH})の関係は，膨潤曲線(swelling curve)
+と呼ばれ，例えば，天然のモンモリロナイトについては\(**\)に，合成されたスメクタイト
+結晶については\(**\)に測定結果が報告されている．
+これらの文献では，モンモリロナイトの膨潤曲線は階段状に変化し，
+特に，合成された巨大なモンモリロナイト単結晶では，ほぼ完全な
+階段状の膨潤曲線となることが示されている．
+このような実験事実を踏まえれば，膨潤曲線(\ref{eqn:d_rH})は，単位ステップ関数:
+\begin{equation}
+	H(x)=\left\{
+	\begin{array}{lc}
+		0,  & (x \lt 0) \\
+		1,  & (x \gt 0) \\
+	\end{array}
+	\right.
+	\label{eqn:Hx}
+\end{equation}
+を用いて次のように表すことができる.
+\begin{equation}
+	d(r_H)= \sum_{i=0}^3 h_i H(r_H-r_i)
+\end{equation}
+ここで,
+\begin{equation}
+	\mu_w
+	=
+	\mu_w^{sat} +RT \log 
+	\left\{
+		\frac{\phi(P_w)}{\phi(P^{sat}_w)}	
+		r_H
+	\right\}
+	\label{eqn:mu_rH}
+\end{equation}
+より,平衡状態では
+\begin{equation}
+	\frac{\partial U_{LJ}}{\partial N}
+	+
+	\frac{\partial U_{hyd}}{\partial N}
+	=
+	\mu_w^{sat} +RT \log 
+	\left\{
+		\frac{\phi(P_w)}{\phi(P^{sat}_w)}	
+		r_H
+	\right\}
+	\label{eqn:equiv_rH}
+\end{equation}
+粘土単結晶の場合，\(N\)と\(r_H\)は，ともに層間距離\(d\)の関数として表すことができるので，
+式(\ref{eqn:equiv_rH})を次のように書き直すことができる．
+\begin{equation}
+	\left( \frac{\partial U_{LJ}}{\partial d}
+	+
+	\frac{\partial U_{hyd}}{\partial d}
+	\right)
+	\frac{\partial d}{\partial N}
+	=
+	\mu_w^{sat} +RT \log 
+	\left\{
+		\frac{\phi(P_w)}{\phi(P^{sat}_w)}	
+		r_H(d)
+	\right\}
+	\label{eqn:}
+\end{equation}
+これを水和エネルギーの微分について解けば，
+\begin{equation}
+	\frac{\partial U_{hyd}}{\partial d}
+	=
+	-\frac{\partial U_{LJ}}{\partial d}
+	+
+	\left[
+	\mu_w^{sat} +RT \log 
+	\left\{
+		\frac{\phi(P_w)}{\phi(P^{sat}_w)}	
+		r_H(d)
+	\right\}
+	\right]
+	\frac{\partial N}{\partial d}
+\end{equation}
+とできるので，この結果を層間距離について積分することで
+単結晶に対する水和エネルギー関数が得られる．
+ただし，CG-MD解析では水和エネルギーの勾配だけが必要とされる
+ため，必ずしも水和エネルギー関数そのものを求める必要はない．
+以下，\(U_{LJ}\)や\(r_H(d)\)を具体的に表し，
+水和エネルギー勾配が\(d\)に関するどのような関数であるかを調べる．
+</li>
+</ul>
+<br>
+文献：諸留-河村、佐藤、人工スメクタイト単結晶、相対湿度の式出典をreferenceに追加
+<br>
+CG-MDのLJポテンシャル、d-N変換式の定式化
+<br>
+git管理下におきremote repositoryを登録
+
+<h2>References</h2>
+</body>
+</html>
