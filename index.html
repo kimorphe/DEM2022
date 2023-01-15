@@ -18,7 +18,7 @@
 </center>
 <h2>Journal</h2>
 <ul>
-<li> 01/13(Thr)<br>
+<li> 01/12(Thr)<br>
 当面の目標として，数値解析に用いることのできる水和エネルギーモデルの定式化を行う．
 そのために，CG system(粗視化粒子系)の自由エネルギーを次のように定義しなおす．
 \begin{equation}
@@ -42,8 +42,10 @@ CG系が平衡状態にあるとき，\(\mu\)は外界の化学ポテンシャ�
 	\mu = \mu_{ex}
 	\label{eqn:equiv_mu}
 \end{equation}
-が成り立つ．
-\(\mu_ex\)は，粘土含水系がおかれた環境の相対湿度\(r_H\)と次の関係がある．
+が成り立つ．いま，粘土含水系が湿度の規定された環境中に置かれていたとする．
+その場合\(\mu_{ex}\)は，気体状態での水の化学ポテンシャルとして与えられる．
+このことが明確になるように\(\mu_{ex}=\mu_w\)と書くことにする．
+\(\mu_w\)は，相対湿度\(r_H\)と次の関係がある．
 \begin{equation}
 	r_H 
 	=
@@ -60,21 +62,22 @@ satは飽和状態での量であることを意味する．また，\(\phi\)は
 粉末X線回折(XRD:X-ray diffraction)試験によって調べられており，
 Na型モンモリロナイトでは，相対湿度の増加にともない
 無水状態の0層膨潤から3層膨潤状態まで，階段状に変化することが知られている．
-従って，層間距離を相対湿度の関数として
+従って，層間距離$h$を相対湿度\(r_H\)の関数として
 \begin{equation}
-	d=d(r_H; T,P)
-	\label{eqn:d_rH}
+	h=h(r_H; T,P)
+	\label{eqn:h_rH}
 \end{equation}
-と表すことにする．ここで，式(\ref{eqn:d_rH})の右辺は，
-層間距離\(d\)$はパラメータ\(T\)と\(P\)を含む\(r_H\)の関数であること
-を示し，\(T\)や\(P\)の変化が無視できるときには省略し，単に\(d=d(r_H)\)と書く．
-XRD試験で測定した式(\ref{eqn:d_rH})の関係は，膨潤曲線(swelling curve)
-と呼ばれ，例えば，天然のモンモリロナイトについては\(**\)に，合成されたスメクタイト
+と表すことにする．ここで，式(\ref{eqn:h_rH})の右辺は，
+層間距離\(h\)$がパラメータ\(T\)と\(P\)を含む\(r_H\)の関数であること
+を示している．ただし，これら\(T\)や\(P\)の変化が無視できるときには省略し，
+単に\(h=h(r_H)\)と書く．
+XRD試験で測定した式(\ref{eqn:h_rH})の関係は，膨潤曲線(swelling curve)と呼ばれる．
+例えば，天然のモンモリロナイトについては\(**\)に，合成されたスメクタイト
 結晶については\(**\)に測定結果が報告されている．
 これらの文献では，モンモリロナイトの膨潤曲線は階段状に変化し，
-特に，合成された巨大なモンモリロナイト単結晶では，ほぼ完全な
-階段状の膨潤曲線となることが示されている．
-このような実験事実を踏まえれば，膨潤曲線(\ref{eqn:d_rH})は，単位ステップ関数:
+特に，合成された巨大モンモリロナイト分子の粉末X線回折試験の結果からは，
+ほぼ完全な階段状の膨潤曲線が得られることが示されている．
+このような実験事実を踏まえれば，膨潤曲線(\ref{eqn:h_rH})は，単位ステップ関数:
 \begin{equation}
 	H(x)=\left\{
 	\begin{array}{lc}
@@ -86,7 +89,7 @@ XRD試験で測定した式(\ref{eqn:d_rH})の関係は，膨潤曲線(swelling 
 \end{equation}
 を用いて次のように表すことができる.
 \begin{equation}
-	d(r_H)= \sum_{i=0}^3 h_i H(r_H-r_i)
+	h(r_H)= \sum_{i=0}^3 \Delta h_i H(r_H-r_i)
 \end{equation}
 ここで,
 \begin{equation}
@@ -112,52 +115,119 @@ XRD試験で測定した式(\ref{eqn:d_rH})の関係は，膨潤曲線(swelling 
 	\right\}
 	\label{eqn:equiv_rH}
 \end{equation}
-粘土単結晶の場合，\(N\)と\(r_H\)は，ともに層間距離\(d\)の関数として表すことができるので，
+粘土単結晶の場合，\(N\)と\(r_H\)は，ともに層間距離\(h\)の関数として表すことができるので，
 式(\ref{eqn:equiv_rH})を次のように書き直すことができる．
 \begin{equation}
-	\left( \frac{\partial U_{LJ}}{\partial d}
+	\left( \frac{\partial U_{LJ}}{\partial h}
 	+
-	\frac{\partial U_{hyd}}{\partial d}
+	\frac{\partial U_{hyd}}{\partial h}
 	\right)
 	\frac{\partial d}{\partial N}
 	=
 	\mu_w^{sat} +RT \log 
 	\left\{
 		\frac{\phi(P_w)}{\phi(P^{sat}_w)}	
-		r_H(d)
+		r_H(h)
 	\right\}
 	\label{eqn:}
 \end{equation}
-これを水和エネルギーの微分について解けば，
+これを水和エネルギー\(U_{hyd}\)の項について解けば，
 \begin{equation}
-	\frac{\partial U_{hyd}}{\partial d}
+	\frac{\partial U_{hyd}}{\partial h}
 	=
-	-\frac{\partial U_{LJ}}{\partial d}
+	-\frac{\partial U_{LJ}}{\partial h}
 	+
 	\left[
 	\mu_w^{sat} +RT \log 
 	\left\{
 		\frac{\phi(P_w)}{\phi(P^{sat}_w)}	
-		r_H(d)
+		r_H(h)
 	\right\}
 	\right]
-	\frac{\partial N}{\partial d}
+	\frac{\partial N}{\partial h}
 \end{equation}
 とできるので，この結果を層間距離について積分することで
 単結晶に対する水和エネルギー関数が得られる．
 ただし，CG-MD解析では水和エネルギーの勾配だけが必要とされる
 ため，必ずしも水和エネルギー関数そのものを求める必要はない．
-以下，\(U_{LJ}\)や\(r_H(d)\)を具体的に表し，
-水和エネルギー勾配が\(d\)に関するどのような関数であるかを調べる．
+以下，\(U_{LJ}\)や\(r_H(h)\)を具体的に表し，
+水和エネルギー勾配が\(h\)に関するどのような関数であるかを調べる．
 </li>
+<li>01/13(Fri.)<br>
+CG系の粒子間相互作用エネルギーは，次のようなLenard-Jones(LJ)ポテンシャルで与えられている．
+\begin{equation}
+	U(\boldsymbol{x}_i,\boldsymbol{x}_j;\sigma)=4\varepsilon \left\{
+	\left( \frac{\sigma}{r_{ij}}\right)^{12}
+	-
+	\left( \frac{\sigma}{r_{ij}}\right)^{6}
+	\right\}
+	, \ \ 
+	(r_{ij}=|\boldsymbol{x}_i-\boldsymbol{x}_j|)
+	\label{eqn:LJ}
+\end{equation}
+ここに，\(\boldsymbol{x}_i\)は第\(i\)粗視化粒子の位置ベクトルを，
+\(\sigma\)はLJポテンシャルの特性距離を表し，ポテンシャルの深さを
+決めるパラメータ\(\varepsilon\)の値は
+\begin{equation}
+\varepsilon=1.0\times 10^{-19}, \ \ ({\rm Nm})
+\label{eqn:eps_num}
+\end{equation}
+である．
+</li>
+<li>01/14(Sat.)<br>
+	膨潤曲線のデータ起こし
+	<ol>
+	<li>論文Figureのpng画像をsvgzファイルにインポート 
+	( <a href="Yamada.svgz">Yamada.svgz</a>, 
+	<a href="Morodome.svgz">Morodome.svgz</a> )
+	<figure>
+		<center>
+		<img src="Yamada.png" width=400, height=300></img>
+		<img src="Morodome.png" width=400, height=300></img>
+		</center>
+	</figure>
+	</li>
+	<li>
+	トレースするグラフにドットを配置 (<a href="measure.svgz">measure.svgz</a>) 
+	</li>
+	<li>
+	配置したドットのobject IDを編集(わかり易い名前に手動で変更)
+	</li>
+	<li>
+	inkscapeコマンドでobject情報[ID,x,y,width,height]を取得(inkscape --query-all measure.svgz)
+	</li>
+	<li>
+	pythonスクリプトでスケールを復元してグラフ化<a href="mkgrph.py">mkgrph.py</a>
+	<figure>
+		<center>
+		<img src="swelling.png" width=400 height=300></img>
+		</center>
+	</figure>
+	</li>
+	</ol>
 </ul>
 <br>
 文献：諸留-河村、佐藤、人工スメクタイト単結晶、相対湿度の式出典をreferenceに追加
 <br>
 CG-MDのLJポテンシャル、d-N変換式の定式化
 <br>
-git管理下におきremote repositoryを登録
 
 <h2>References</h2>
+<ul>
+	<li>H. Yamada, H. Nakazawa, H. Hashizume, S. Shimomura, and T. Watanabe,
+	"Hydration behavior of Na-smectite crystals synthesized at high pressure and high temperature,
+	Clays and Clay Minerals, vol.42, No.1, pp.77-80, 1994.
+	</li>
+	<li>
+	S. Morodome and K. Kawamura,
+	"Swelling behavior of Na- and Ca-montmorillonite up to 150°C by in situ X-Ray diffraction experiments",
+	, Clays and Clay Minerals,vol.57, pp.150-160, 2009.
+	</li>
+	<li>
+		T. J. Tambach, P. G. Bolhuis, E. J.M. Hensen, and B. Smit, 
+		"Hysterisis in clay swelling induced by hydrogen bonding: Accurate prediction of swelling state, 
+		Langmuire, vol.22, pp.1223-1234, 2006.
+	</li>
+</ul>
 </body>
 </html>
