@@ -8,6 +8,7 @@ git add *.py
 git add *.sh
 
 git add *.svgz
+git add *.txt
 
 git commit
 git push -u origin master
