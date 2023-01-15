@@ -9,6 +9,7 @@ git add *.sh
 
 git add *.svgz
 git add *.txt
+git add *.png
 
 git commit
 git push -u origin master

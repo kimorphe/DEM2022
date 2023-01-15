@@ -182,9 +182,10 @@ CG系の粒子間相互作用エネルギーは，次のようなLenard-Jones(LJ
 	<a href="Morodome.svgz">Morodome.svgz</a> )
 	<figure>
 		<center>
-		<img src="Yamada.png" width=400, height=300></img>
-		<img src="Morodome.png" width=400, height=300></img>
+		<img src="Yamada.png" width=450, height=300></img>
+		<img src="Morodome.png" width=450, height=300></img>
 		</center>
+		<figcaption>論文で報告されNa型スメクタイトの膨潤曲線</figcaption>
 	</figure>
 	</li>
 	<li>
@@ -201,17 +202,44 @@ CG系の粒子間相互作用エネルギーは，次のようなLenard-Jones(LJ
 	<figure>
 		<center>
 		<img src="swelling.png" width=400 height=300></img>
+		<figcaption>論文から復元した膨潤曲線(Naモンモリロナイト,50℃)(Morodome & Kawamura 2009)</figcaption>
 		</center>
 	</figure>
 	</li>
 	</ol>
+<li>01/15(Sun.)<br>
+	pythonスクリプト<a href="mkgrph.py">mkgrph.py</a>
+	で，ステップ関数と誤差関数それぞれを用いて膨潤曲線を近似．<br>
+	<figure>
+	<center>
+		<img src="fitted.png", width=450,height=400></img>
+		<figcaption>ステップ関数と誤差関数による膨潤曲線のフィッテイング</figcaption>
+	</center>
+	</figure>
+	misfit分を平滑化すれば、使いやすい関数がられることを期待していたが，再構成した実験データを
+	そのまま使う方がよいという結論になった．<br>
+	なお，再構成した実験データの点数は、元の実験データ点数より少ない
+	(プロットが重なって見えないため). <br> 
+	平滑化した膨潤曲線を用いることの問題点: 勾配が負になる箇所が生じ．その箇所で逆関数が1価関数にならない!<br>
+
+	<figure>
+	<center>
+		<img src="log_rH.png", width=400,height=400></img>
+		<figcaption>膨潤曲線から計算したの\( \log \left\{ \gamma_H(h)\right\} \)グラフ</figcaption>
+	</center>
+	</figure>
+	再構成した膨潤曲線のデータはこちら(<a href="rH_x.dat">rH_x.dat</a>)<br>
+	この数値データを使って水和エネルギー関数を定義．<br>
+	次にやるべきことは，MD膨潤曲線
+	\begin{equation}
+		h=h(N), \ \ h'(N)=\frac{dh}{dN} 
+		\label{eqn:MD_sw}
+	\end{equation}
+	を数値的にモデル化して使用可能な状態にすること．
 </ul>
-<br>
-文献：諸留-河村、佐藤、人工スメクタイト単結晶、相対湿度の式出典をreferenceに追加
 <br>
 CG-MDのLJポテンシャル、d-N変換式の定式化
 <br>
-
 <h2>References</h2>
 <ul>
 	<li>H. Yamada, H. Nakazawa, H. Hashizume, S. Shimomura, and T. Watanabe,
