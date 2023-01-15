@@ -11,5 +11,7 @@ git add *.svgz
 git add *.txt
 git add *.png
 
+git add MD_Data/*
+
 git commit
 git push -u origin master
