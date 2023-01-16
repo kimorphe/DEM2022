@@ -236,6 +236,38 @@ CG系の粒子間相互作用エネルギーは，次のようなLenard-Jones(LJ
 		\label{eqn:MD_sw}
 	\end{equation}
 	を数値的にモデル化して使用可能な状態にすること．
+<li>01/16(Mon.)<br>
+	MD計算結果(MD_Data/
+	<a href="MD_Data/NaMt.dat">NaMt.dat</a>, 
+	<a href="MD_Data/CaMt.dat">CaMt.dat</a>)
+	<br>
+	いずれも水分子数0のときのデータを1行目に加筆.<br>
+	<br>
+	dn/dhの計算とグラフ表示には
+	<a href="MD_Data/mk_dndh.py">mk_dndh.py</a> --> mk_dndh.png(画像), mk_dndh.dat(データ)
+	を使用.<br>
+	<figure>
+	<center>
+		<img src="MD_Data/mk_dndh.png", width=500, height=400></img>
+		<figcaption>全原子MD解析で得られた水分子数\(n\)と層間距離\(h\)の関係(上)と，
+			層間距離に対する水分子数の増加率(下).
+		</figcaption>
+	</center>
+	</figure>
+	<br>
+	データ補間と水和エネルギーモデルの作成(<a href="uhyd.py">uhyd.py</a>)<br>
+	数値データは<a href="uhyd.dat">uhyd.dat</a>に保存される．
+	<br>
+	<figure>
+	<center>
+		<img src="uhyd.png", width=400, height=300></img>
+		<figcaption>
+		XRDデータ(rH_x.dat)とMDデータ(mk_dndh.dat)を元にしてモデル化した水和エネルギー関数.
+		</figcaption>
+	</center>
+	</figure>
+
+</li>
 </ul>
 <br>
 CG-MDのLJポテンシャル、d-N変換式の定式化

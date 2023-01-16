@@ -123,8 +123,9 @@ class DATA:
         ax.plot(self.nH2O,self.Uhyd)
         ax.set_ylabel("$U_{hyd}$")
     def plot_b_spc(self,ax):
-        ax.plot(self.nH2O,self.b_spc)
+        ax.plot(self.nH2O,self.b_spc,"-o",markersize=6)
         ax.set_ylabel("basal spacing")
+        ax.grid(True)
     def plot_cod_num(self,ax):
         ax.plot(self.nH2O,self.cod_num)
         ax.set_ylabel("coordination number")
@@ -165,41 +166,15 @@ if __name__=="__main__":
     Na.load() # load Na-Montmorillonite data
 
 
-#       LogLog Energy Plot
-    fig1=plt.figure()
-    ax=fig1.add_subplot(111)
-    ax.grid(True)
-    ax.set_aspect(1.0)
-    print("Na-Mt")
-    Na.plot_logU(ax,name="Na")    
-    print("Ca-Mt")
-    Ca.plot_logU(ax,name="Ca")
-    ax.legend()
-
-
-#       Deviatric components
-    fig3=plt.figure()
-    cx=fig3.add_subplot(111)
-    #Na_dev=Na.plot_dev(cx,m=1.09,name="Na") 
-    #Ca_dev=Ca.plot_dev(cx,m=1.0,name="Ca")
-    #Na_dev=Na.plot_dev(cx,m=1.15,name="Na") 
-    #Ca_dev=Ca.plot_dev(cx,m=1.04,name="Ca")
-    Na_dev=Na.plot_dev(cx,m=1.097,name="Na") 
-    Ca_dev=Ca.plot_dev(cx,m=0.963,name="Ca")
-    cx.grid(True)
-    cx.legend()
-
 #   ---------------------------------------------
 #      Variation in terms of h (basal spacing)
-    fig4=plt.figure()
-    ex1=fig4.add_subplot(141)
-    ex2=fig4.add_subplot(142)
-    ex3=fig4.add_subplot(143)
-    ex4=fig4.add_subplot(144)
-    ex=[ex1,ex2,ex3,ex4]
+    fig=plt.figure()
+    ex1=fig.add_subplot(211)
+    ex2=fig.add_subplot(212)
+    ex=[ex1,ex2]
 
-    ex1.plot(Ca.nH2O,Ca.b_spc,"or-",label="Ca")
-    ex1.plot(Na.nH2O,Na.b_spc,"ob-",label="Na")
+    ex1.plot(Ca.b_spc,Ca.nH2O,"or-",label="Ca")
+    ex1.plot(Na.b_spc,Na.nH2O,"ob-",label="Na")
     ex1.legend()
 
     nsmp=5
@@ -208,49 +183,44 @@ if __name__=="__main__":
     y2=smooth(Ca.b_spc,nsmp,extend=True)
     Na_dn=dn/cdiff(y1)
     Ca_dn=dn/cdiff(y2)
-    ex2.plot(Ca_dn,Ca.b_spc,"or-",label="Ca")
-    ex2.plot(Na_dn,Na.b_spc,"ob-",label="Na")
-
-    Na_mu=cdiff(smooth(Na_dev*Na.nH2O,nsmp,extend=True))/dn
-    Ca_mu=cdiff(smooth(Ca_dev*Ca.nH2O,nsmp,extend=True))/dn
-    ex3.plot(Ca_mu,Ca.b_spc,"ro-")
-    ex3.plot(Na_mu,Na.b_spc,"bo-")
-
-    Na_dC=cdiff(smooth(Na.cod_num,nsmp,extend=True))/dn
-    Ca_dC=cdiff(smooth(Ca.cod_num,nsmp,extend=True))/dn
-    ex4.plot(Ca_dC,Ca.b_spc,"ro-")
-    ex4.plot(Na_dC,Na.b_spc,"bo-")
+    ex2.plot(Ca.b_spc,Ca_dn,"or-",label="Ca")
+    ex2.plot(Na.b_spc,Na_dn,"ob-",label="Na")
+    ex2.legend()
 
 
     fsz=12
     for exj in ex:
         exj.grid(True)
-        exj.set_ylim([10.5,21.5])
+        exj.set_xlim([9.5,21.5])
         exj.tick_params(labelsize=fsz)
 
-        xlim=exj.get_xlim()
-        exj.hlines(12.4,xlim[0],xlim[1],linestyles="dashed")#,linewidth=2)
-        exj.hlines(15.6,xlim[0],xlim[1],linestyles="dashed")#,linewidth=2)
-        exj.hlines(19.0,xlim[0],xlim[1],linestyles="dashed")#,linewidth=2)
-        exj.set_xlim(xlim)
+        ylim=exj.get_ylim()
+        exj.vlines(12.4,ylim[0],ylim[1],linestyles="dashed")#,linewidth=2)
+        exj.vlines(15.6,ylim[0],ylim[1],linestyles="dashed")#,linewidth=2)
+        exj.vlines(19.0,ylim[0],ylim[1],linestyles="dashed")#,linewidth=2)
+        exj.set_ylim(ylim)
 
-    ex1.set_ylabel("Basal Spacing h",fontsize=12)
-    ex1.set_xlabel("n(H$_2$O)",fontsize=12)
-    ex2.set_xlabel("$dn/dh$",fontsize=12)
-    ex3.set_xlabel("$dU/dn$",fontsize=12)
-    ex4.set_xlabel("$dN_c/dn$",fontsize=12)
+    ex2.set_xlabel("Basal Spacing h [$\AA$]",fontsize=12)
+    ex1.set_ylabel("n(H$_2$O)",fontsize=12)
+    ex2.set_ylabel("$dn/dh$",fontsize=12)
 
-    ex2.plot(Ca_dn,Ca.b_spc,"or-",label="Ca")
-    ex2.plot(Na_dn,Na.b_spc,"ob-",label="Na")
+    ex2.plot(Ca.b_spc,Ca_dn,"or-",label="Ca")
+    ex2.plot(Na.b_spc,Na_dn,"ob-",label="Na")
 
+    print("ndat(Ca)=",len(Ca.nH2O), len(Ca.b_spc),len(Ca_dn))
+    print("ndat(Na)=",len(Na.nH2O), len(Na.b_spc),len(Na_dn))
 
-    txt="# basal spacing (Na, Ca), increment dn of H2O molecules(Na, Ca)\n"
+    txt="# basal spacing (Na, Ca), n(H2O)(Na, Ca), increment dn of H2O molecules(Na, Ca)\n"
     for k in range(len(Ca_dn)):
-        txt+=str(Na.b_spc[k])+", "+str(Ca.b_spc[k])+", "+str(Na_dn[k])+", "+str(Ca_dn[k])+"\n"
+        txt+=str(Na.b_spc[k])+", "+str(Ca.b_spc[k]);
+        txt+=", "+str(Na.nH2O[k])+", "+str(Ca.nH2O[k]);
+        txt+=", "+str(Na_dn[k])+", "+str(Ca_dn[k])+"\n"
 
-    fp=open("dndh.dat","w")
+    fp=open("mk_dndh.dat","w")
     fp.write(txt)
     fp.close()
+
+    fig.savefig("mk_dndh.png",bbox_inches="tight")
     plt.show()
 
 

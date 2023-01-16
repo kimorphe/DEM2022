@@ -110,7 +110,7 @@ if __name__=="__main__":
     
     ax.plot(xcod*100,ycod,"ko-",markersize=8,label="measured")
     ax.set_xlabel("relative humidity [%]")
-    ax.set_ylabel("basal spacing [A]")
+    ax.set_ylabel("basal spacing [$\AA$]")
     ax.set_title("Na-Mt at 50[deg], Morodome & Kawamura (2009)",fontsize=12)
     fig1.savefig("swelling.png",bbox_inches="tight")
     
@@ -122,7 +122,7 @@ if __name__=="__main__":
     bx1.grid(True)
     bx1.set_xlim([-5,105.0])
     bx1.set_ylim([9,16.])
-    bx1.set_ylabel("basal spacing [A]")
+    bx1.set_ylabel("basal spacing [$\AA$]")
 
     bx2=fig2.add_subplot(212)
     bx2.plot(rH*100,ycod-y,"-",label="step func.")
@@ -131,7 +131,7 @@ if __name__=="__main__":
     bx2.set_xlim([-5,105.0])
     bx2.set_ylim([-2,2])
     bx2.set_xlabel("relative humidity [%]")
-    bx2.set_ylabel("misfit [A]")
+    bx2.set_ylabel("misfit [$\AA$]")
 
     dz0=ycod-z;
 
@@ -156,7 +156,7 @@ if __name__=="__main__":
     cx.set_xlim([9.5,16])
     #cx.set_ylim([-5,105])
     cx.set_title("log inverse swelling curve")
-    cx.set_xlabel("basal spacing $h$ [A]")
+    cx.set_xlabel("basal spacing $h$ [$\AA$]")
     cx.set_ylabel("log $\gamma_H(h) $")
 
     fig2.savefig("fitted.png",bbox_inches="tight")
