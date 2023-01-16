@@ -13,5 +13,7 @@ git add *.png
 
 git add MD_Data/*
 
+git add *.dat
+
 git commit
 git push -u origin master
