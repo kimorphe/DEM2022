@@ -1,0 +1,23 @@
+# Wall Displacement (ux,uy), Period T, burst cycle  
+# floor   (iwall=-1)
+  0.0  100.0  25.0 0.25
+# right wall (iwall=-2)
+  0.0   0.0  30.0 1.0
+# ceiling (iwall=-3)
+  0.0 -100.0  25.0 0.25
+# left wall (iwall=-4)
+  0.0   0.0  30.0 1.0
+# wall position (x,y), iwl( 1:on, 0:off) 
+ 0.0 -130.0  0
+ 0.0   0.0  0
+ 0.0  140.0  0
+ 0.0   0.0  0
+
+# Floor   (iwall=-1)
+  0.0  6.0  30.0 0.5
+# Left wall (iwall=-2)
+  5.0 0.0  20.0  0.8
+# Ceiling (iwall=-3)
+  0.0  -6.0  30.0 0.5
+# Right wall (iwall=-4)
+  -5.0 0.0  20.0 0.8

@@ -1,0 +1,45 @@
+# output Data Directory
+./Output/
+# rstat (restart 0=No, 1=Yes)
+ 1
+# initial condition data file (used only when rstat > 0)
+../Phase1/Output/x250.dat
+# Nout (number of time steps for output)
+ 250
+# mass/particle [kg], Eps [kg(m/s)^2=Nm] 
+ 2.468e-24  1.e-19
+# dt [ps],  Nt (time increment, time steps)
+ 0.02 50000
+# eta [-] ( dimensionless coefficient of viscous damping) 
+ 0.00
+# K1, K2 [kg/s^2] (spring constants)
+ 2000.0 4000.0 
+# sig [nm] (characterstic length of L-J potential)
+ 1.5
+# mvw ( move water 1:yes, 0:No)
+ 0
+# Initial velocity [nm/ps] (min, max)
+ 0.0 0.0
+# Temperature control (1:Yes, 0: No), T_set[K] t0,t1[ps]
+ 1 300.0  0.0 250.0
+# bounding box Xa[2], Xb[2] [nm] , iprd(1:periodic B.C.)
+ -50.0 -50.0 
+ 250.0 250.0 
+# periodic B.C. (1: yes, 2: no) in x- and y-directions  
+ 1 1
+# cntrl: 0: strain, 1: stress given 
+ 0 
+# strain  exx & times (ta, tb)
+  0.0 -0.0   0.0 1000.0  
+# strain  eyy & times (ta, tb)
+  0.0 -0.0   0.0 1000.0
+# strain  exy & times (ta, tb)
+  0.0  0.0   0.0 1000.0  
+# strain  eyx & times (ta, tb)
+  0.0  0.0   0.0 1000.0
+# pxx, pyy, pxy (GPa) ( used when cntrl==1)
+ 0.05 0.05 0.01
+# nave (number of data for moving average)
+ 24
+# chemical potential
+ 0.1

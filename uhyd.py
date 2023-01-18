@@ -159,7 +159,7 @@ if __name__=="__main__":
     ax.plot(hs, dndh,"-ko",label="dn/dh")
     ax.plot(hs, np.log(rH+1.e-08),"-o",label="log(rH)")
 
-    mu_sat=-1.0 # chemical potential of saturated H2O vapor 
+    mu_sat=-0.2 # chemical potential of saturated H2O vapor 
     dUdh=(mu_sat+np.log(rH+1.e-08))*dndh # Gradiendt of U_hyd (hydration energy/particle)
     ax.plot(hs, dUdh,"-o",label="dU/dh(h)")
     ax.grid(True)
@@ -175,9 +175,11 @@ if __name__=="__main__":
     ax2.set_xlabel("basal spacing [$\AA$]")
     ax2.set_ylabel("hyndration energy/particle/$\mu_{sat}$")
 
-    txt="# basal spacing [A], hydration energy\n"
-    for k in range(len(hs)):
-        txt+=str(hs[k])+", "+str(Uh[k])+"\n"
+    txt="# basal spacing [nm], hydration energy\n"
+    ndat=len(hs)
+    txt+=str(ndat)+"\n"
+    for k in range(ndat):
+        txt+=str(hs[ndat-1-k]*0.1)+", "+str(Uh[ndat-1-k])+"\n"
 
     fp=open("uhyd.dat","w")
     fp.write(txt)
