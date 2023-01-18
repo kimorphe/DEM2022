@@ -155,25 +155,41 @@ if __name__=="__main__":
     rH=np.array(rH)
 
     fig=plt.figure()
-    ax=fig.add_subplot(111)
-    ax.plot(hs, dndh,"-ko",label="dn/dh")
-    ax.plot(hs, np.log(rH+1.e-08),"-o",label="log(rH)")
+    ax1=fig.add_subplot(311)
+    ax2=fig.add_subplot(312)
+    ax3=fig.add_subplot(313)
+    ax1.plot(hs, dndh,"-ko",label="dn/dh")
 
-    mu_sat=-0.2 # chemical potential of saturated H2O vapor 
-    dUdh=(mu_sat+np.log(rH+1.e-08))*dndh # Gradiendt of U_hyd (hydration energy/particle)
-    ax.plot(hs, dUdh,"-o",label="dU/dh(h)")
-    ax.grid(True)
-    ax.set_xlabel("basal spacing [$\AA$]")
-    ax.legend()
-    ax.set_ylim([-3.5,3])
+    #mu_sat 
+    #dUdh=(mu_sat+np.log(rH+1.e-08))*dndh # Gradiendt of U_hyd (hydration energy/particle)
+    beta=1./18.0 # RT/mu_sat (R:gas constant, T:temperature, mu_sat:chemical potential at saturation)
+    dUdh=(-1.0+beta*np.log(rH+1.e-08))*dndh # Gradiendt of U_hyd (hydration energy/particle)
+    mu=-1+beta*np.log(rH+1.e-08)
+    ax2.plot(hs,mu,"-o",label="mu/mu_sat")
+    ax3.plot(hs, dUdh,"-o",label="dU/dh(h)")
+    ax1.grid(True)
+    ax2.grid(True)
+    ax3.grid(True)
+    ax3.set_xlabel("basal spacing [$\AA$]")
+    ax1.legend()
+    ax2.legend()
+    ax3.legend()
+    ax2.set_ylim([-1.2,-1.0])
+
+    nH2O=[]
+    for hz in hs:
+        nH2O.append(h_sim.nH2O_val(hz))
+    nH2O=np.array(nH2O)
 
     Uh=np.cumsum(dUdh)*(hs[1]-hs[0])  #hydration energy
     fig2=plt.figure()
-    ax2=fig2.add_subplot(111)
-    ax2.plot(hs,Uh,"k-",linewidth=2)
-    ax2.grid(True)
-    ax2.set_xlabel("basal spacing [$\AA$]")
-    ax2.set_ylabel("hyndration energy/particle/$\mu_{sat}$")
+    bx=fig2.add_subplot(111)
+    #bx.plot(hs,Uh,"k-",linewidth=2)
+    bx.plot(nH2O,Uh,"k-",linewidth=2)
+    bx.grid(True)
+    #bx.set_xlabel("basal spacing [$\AA$]")
+    bx.set_xlabel("n(H2O)[mol/unit lattice]")
+    bx.set_ylabel("hyndration energy/particle/$\mu_{sat}$")
 
     txt="# basal spacing [nm], hydration energy\n"
     ndat=len(hs)
