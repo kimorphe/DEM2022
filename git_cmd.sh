@@ -19,6 +19,7 @@ git add DATA/*.html
 git add DATA/Phase1/*.html
 git add DATA/Phase1/dem.inp
 git add DATA/Phase1/sheet.dat
+git add DATA/Phase1/ptc.dat
 git add DATA/Phase1/wall.dat
 git add DATA/Phase1/bbox.dat
 git add DATA/Phase2Fix/Output/x250.dat
@@ -27,12 +28,14 @@ git add DATA/Phase2Fix/*.html
 git add DATA/Phase2Fix/dem.inp
 git add DATA/Phase2Fix/sheet.dat
 git add DATA/Phase2Fix/wall.dat
+git add DATA/Phase2Fix/ptc.dat
 git add DATA/Phase2Fix/bbox.dat
 git add DATA/Phase2Fix/Output/x251.dat
 
 git add DATA/SmecMu03/*.html
 git add DATA/SmecMu03/dem.inp
 git add DATA/SmecMu03/sheet.dat
+git add DATA/SmecMu03/ptc.dat
 git add DATA/SmecMu03/wall.dat
 git add DATA/SmecMu03/bbox.dat
 
