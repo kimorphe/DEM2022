@@ -9,12 +9,12 @@ class N2H{
 	public:
 		int ndat;	// number of nH2O data points (equi-spaced, prescribed)
 		double *nH2O;   // number of H2O/unit structure 
-		double *hz;	// basal spacing (N->H map)
+		double *hz;	// basal spacing [nm] (N->H map)
 		int load(char fname[128]); // load data from "NaMt.dat" or "CaMt.dat"
 		double dn;	// nH2O increment (for MD simlation)
 		double hmin,hmax; // min and max basal spacing 
 		double get_h(double nw); // return h(basal spacing) for given n(H2O)
-		int get_nindex(double h); // return index for given h(basal spacing) 
+		int h_index(double h); // return index for given h(basal spacing) 
 		double get_nH2O(double h);// return n(H2O) for givne h
 
 		int ndat_h;	// equi-spaced hz data points (arbitrary) 
@@ -37,10 +37,9 @@ double N2H::get_h(double nw){
 	double xi=nw/dn-i1;
 	double eta=1.-xi;
 	return(eta*hz[i1]+xi*hz[i2]);
-
 };
 
-int N2H::get_nindex(double h){
+int N2H::h_index(double h){
 	if(h<=hmin) return(-1);
 	if(h>=hmax) return(ndat);
 	int indx=0;
@@ -49,8 +48,8 @@ int N2H::get_nindex(double h){
 };
 
 double N2H::get_nH2O(double h){
-	int i1=N2H::get_nindex(h);
-	if(i1<0) return(0);
+	int i1=N2H::h_index(h);
+	if(i1<0) return(nH2O[0]);
 	if(i1>=ndat) return(nH2O[ndat-1]);
 
 	double n1=nH2O[i1];

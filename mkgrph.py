@@ -162,7 +162,8 @@ if __name__=="__main__":
     fig2.savefig("fitted.png",bbox_inches="tight")
     fig3.savefig("log_rH.png",bbox_inches="tight")
 
-    txt="# relative humidity, basal spacing[A](measured, stair-case fitted)\n"
+    txt=str(len(rH))+"\n";
+    txt+="# relative humidity, basal spacing[A](measured, stair-case fitted)\n"
     for k in range(len(rH)):
         txt+=str(rH[k])+", "+str(ycod[k])+", "+str(z[k])+"\n"
     fp=open("rH_x.dat","w")

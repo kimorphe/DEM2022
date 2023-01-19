@@ -269,16 +269,22 @@ CG系の粒子間相互作用エネルギーは，次のようなLenard-Jones(LJ
 
 </li>
 <li>01/19(Thr.)<br>
-	MD計算での膨潤曲線をCG-MD計算に利用するための準備<br>
+	MD計算と実験で得られた膨潤曲線を，CG-MD計算に利用するための準備<br>
 
-	<a href="MD_Data/NaMt.dat">(MD_Data/NaMt.dat</a>から
-	\(n(H2O)--h\)間のマッピングを作成するプログラム
+	<a href="MD_Data/NaMt.dat">MD_Data/NaMt.dat</a>から
+	n(H2O)--h間のマッピング作成プログラム=
 	<a href="MD_Data/NHmap.cpp">(MD_Data/NHmap.cpp)</a> <br>
+	出力ファイル:<br>
 	n->h mapping(元データそのまま):
-	<a href="MD_Data/n2h.dat">(MD_Data/n2h.dat)</a> <br>
+	<a href="MD_Data/n2h.dat">MD_Data/n2h.dat</a> <br>
 	h->2 mapping(等間隔グリッドへ補間):
-	<a href="MD_Data/h2n.dat">(MD_Data/h2n.dat)</a> <br>
+	<a href="MD_Data/h2n.dat">MD_Data/h2n.dat</a> <br>
 	を生成．
+
+	<br>
+	<br>
+	XRD膨潤曲線データ(<a href="rH_x.dat">rH_x.dat</a>)の書式変更(先頭行にデータ数を追加)<br>
+	連動して<a href="uhyd.py">uhyd.py</a>のデータ読み込みmethodを修正
 
 </li>
 </ul>

@@ -6,6 +6,7 @@ git add Src/*.cpp
 git add Src/makefile
 git add Src/*.html
 
+git add *.cpp
 git add *.py
 git add *.sh
 

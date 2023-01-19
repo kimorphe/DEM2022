@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 class MEAS:
     def __init__(self,fname="rH_x.dat"):
         fp=open(fname,"r")
+        ndat=int(fp.readline())
+        print("ndat=",ndat)
         fp.readline()
 
         rH=[]
