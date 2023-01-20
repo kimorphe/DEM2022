@@ -58,38 +58,6 @@ class Curve2D{	// plane (2D) curve
 	private:
 	protected:
 };
-double Uhyd_sig(double U0, double sig);
-class Crv{
-	public:
-		int np;
-		void setup(int n);
-		void set_xlim(double x1, double x2);
-		double *x,*y;
-		double xs,xe,dx;
-		double xmin,xmax;
-		void set_stair(double *Xk, int NXk);
-		void write(char fname[128]);
-		void saw_tooth(double *Xk, int NXk,double gmm);
-		void smooth(int nsmp);
-		void trend(int type,double amp_wv);
-		double eval(double xval);
-		void load(char fn[128]);
-		double y2x(double yval);
-	private:
-};
-
-class CLAY{
-	public:
-		void load(char fname[128]);
-		Crv hz; // basal spacing [nm]
-		Crv rH; // relative humidity
-		Crv mu_var; // chemical potential (nolineary varying part) [J/particle/face]
-		Crv G_var; // hydration free energy 
-		double mu_sat; // chemical potential at saturated R.H.
-		int ndat;
-	private:
-	protected:
-};
 
 class CNTRL{	// DEM implementation controle parameters
 	public:
@@ -258,7 +226,7 @@ class SHEET{
 		void set_vel(PRTCL *PTC, double vx, double vy);		// set velocity vector 
 		Curve2D crv;
 		void xy2crv(REV rev,PRTCL *PTC);
-		void wsmooth(REV rev, PRTCL *PTC, CLAY NaMt);
+		void wsmooth(REV rev, PRTCL *PTC);
 	private:
 }; 
 
@@ -397,3 +365,35 @@ void restart(
 	int nst,
 	SHEET *st
 );
+double Uhyd_sig(double U0, double sig);
+class Crv{
+	public:
+		int np;
+		void setup(int n);
+		void set_xlim(double x1, double x2);
+		double *x,*y;
+		double xs,xe,dx;
+		double xmin,xmax;
+		void set_stair(double *Xk, int NXk);
+		void write(char fname[128]);
+		void saw_tooth(double *Xk, int NXk,double gmm);
+		void smooth(int nsmp);
+		void trend(int type,double amp_wv);
+		double eval(double xval);
+		void load(char fn[128]);
+		double y2x(double yval);
+	private:
+};
+
+class CLAY{
+	public:
+		void load(char fname[128]);
+		Crv hz; // basal spacing [nm]
+		Crv rH; // relative humidity
+		Crv mu_var; // chemical potential (nolineary varying part) [J/particle/face]
+		Crv G_var; // hydration free energy 
+		double mu_sat; // chemical potential at saturated R.H.
+		int ndat;
+	private:
+	protected:
+};

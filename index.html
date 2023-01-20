@@ -260,9 +260,10 @@ CG系の粒子間相互作用エネルギーは，次のようなLenard-Jones(LJ
 	<br>
 	<figure>
 	<center>
-		<img src="uhyd.png", width=400, height=300></img>
+		<img src="uhyd.png", width=400, height=400></img>
 		<figcaption>
 		XRDデータ(rH_x.dat)とMDデータ(mk_dndh.dat)を元にしてモデル化した水和エネルギー関数.
+		hydration energyは対数項（非線形成分=\(1+\frac{RT}{\mu_{sat}}\log\{r_H(n)\}\)）のみを表示.
 		</figcaption>
 	</center>
 	</figure>
@@ -280,12 +281,17 @@ CG系の粒子間相互作用エネルギーは，次のようなLenard-Jones(LJ
 	h->2 mapping(等間隔グリッドへ補間):
 	<a href="MD_Data/h2n.dat">MD_Data/h2n.dat</a> <br>
 	を生成．
-
 	<br>
 	<br>
 	XRD膨潤曲線データ(<a href="rH_x.dat">rH_x.dat</a>)の書式変更(先頭行にデータ数を追加)<br>
-	連動して<a href="uhyd.py">uhyd.py</a>のデータ読み込みmethodを修正
-
+	連動して<a href="uhyd.py">uhyd.py</a>のデータ読み込みmethodを修正<br>
+	層間距離hでの積分によって水和自由エネルギーを計算しようとしたが、粒子数nでの積分結果と合わない(uhyd.py)<br>
+	dn/dhが平滑化した結果を元にして計算していることが原因として疑われる．結局，\(n \rightarrow h \rightarrow r_H \)
+	と変換して，nで積分する形に修正
+	<br>
+	<br>
+	C/C++プログラム(<a href="Uhyd.cpp">Uhyd.cpp</a>)での水和自由エネルギーデータを作成.<br>
+	出力ファイルは<a href="Uhyd.out">Uhyd.out</a>. これをDEMプログラムへインポートする予定.<br>
 </li>
 </ul>
 <br>

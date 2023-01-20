@@ -213,8 +213,7 @@ double add_water(
 		SUBCELL *sbcll,// Subcells 
 		REV rev,	// REV data
 		CNTRL prms,	// Basic DEM  Parameters
-		Crv uhyd,
-		CLAY NaMt
+		Crv uhyd
 ){
 	int np=prms.np;
 	int ipt,iside,isgn;
@@ -227,7 +226,6 @@ double add_water(
 	//static std::uniform_int_distribution<int>RndI(0,np2);
 	static std::uniform_int_distribution<>RndI(0,np*2-1);
 	static std::uniform_real_distribution<>RndR(0,1);
-
 
 	int ip,irnd;
 	int nmc=np*2*0.1;
@@ -245,16 +243,6 @@ double add_water(
 	double Ts=1.e-00, Te=1.e-04;
 	double alph=-log(Te/Ts)/prms.Nt,Tunit=1.0;
 	double kbT,rnd; 
-
-	double dnw=0.15; // n(H2O) fluctuation
-	double nw_now,nw_try; // n(H2O) current and trial
-	double sig_try;
-	double mu_w;
-
-	double RH=0.5;
-	double RT=300.*8.31;
-	mu_w=log(RH)*RT;	// <- scale need to be adjusted
-
 	kbT=prms.UE0*exp(-alph*prms.itime)*Ts*Tunit;
 	Gn=0.0; nadd=0;
 	for(ipt=0;ipt<nmc;ipt++){
@@ -264,25 +252,15 @@ double add_water(
 		isgn=1;
 		if(irnd%2==1) isgn=-1;
 	// [1] Change in LJ Pontential Energy
-		sig_now=PTC[ip].sigs[iside];
-		nw_now=PTC[ip].nH2O[iside];
-		nw_try=nw_now+dnw*isgn;
-		sig_try=NaMt.hz.eval(nw_try);
-
-		//dsig=sig_try-sig_now;
-		
 		dUE=VarUE_mu(rev,sbcll,PTC,prms.iprd,prms.sig,prms.Eps,ip,iside,dsig*isgn); //*2.*prms.Eps0;
-		//dUE=VarUE_mu(rev,sbcll,PTC,prms.iprd,prms.sig,prms.Eps,ip,iside,dsig); 
 	// current sigma stashed
 		sig_now=PTC[ip].sigs[iside];
 
-		//dUh=Uhyd_sig(prms.UE0,sig_now+dsig*isgn)-Uhyd_sig(prms.UE0,sig_now); <-- new
+		//dUh=Uhyd_sig(prms.UE0,sig_now+dsig*isgn)-Uhyd_sig(prms.UE0,sig_now);
 	// [2] evaulate variation in Hydration Energy
 		dUh=(uhyd.eval(sig_now+dsig*isgn)-uhyd.eval(sig_now))*prms.UE0;
-		//dUh=NaMt.mu_var.eval(nw_now)*dnw*isgn; <-- new
 	// [3] variation of free energy (water reservoir)
 		dG=mu*dsig*isgn;
-		//dG=mu_w*dnw*isgn; <-- new
 	// [4] Total energy variation
 		Utot=dUE+dUh+dG;	
 		prob=exp(-Utot/kbT);
@@ -292,11 +270,10 @@ double add_water(
 		//if(dUE+dUh+dG < 0.0){
 			//PTC[ip].sigs[iside]+=(dsig*isgn);
 			sig=PTC[ip].sigs[iside]+dsig*isgn;
-			if(sig>=0.9){ //if(sig_try>=0.9){
+			if(sig>=0.9){
 				PTC[ip].UE[iside]+=dUE;
 				//printf("dUE,dUh=%le %le(U0=%le)\n",dUE,dUh,prms.UE0);
-				PTC[ip].sigs[iside]=sig; // PTC[ip].sigs[iside]=sig_try;
-				PTC[ip].nH2O[iside]=nw_try;
+				PTC[ip].sigs[iside]=sig;
 				if(isgn ==1) nadd++;
 				if(isgn ==-1) nadd--;
 				Gn+=dG;
@@ -384,7 +361,6 @@ int main(){
 	double Na=6.022e+23; // Abogadro Number
 	double TK;	// Temperature [K]
 	double KE,UE;	// Kinetic & Potential energy
-		printf("UE=%le, Eps0=%le\n",UE,prms.Eps0);
 
 	double Uhyd;	// hydration energy value
 
@@ -509,7 +485,6 @@ int main(){
 	rev.print();		// print REV parameters
 	for(i=0;i<nst;i++) st[i].xy2crv(rev,PTC);
 
-		printf("UE=%lf, Eps0=%lf\n",UE,prms.Eps0);
 
 //	----------------------------------------------
 	
@@ -544,11 +519,10 @@ int main(){
 
 	SUBCELL *sbcll;
 	double Un=0.0,UnKJ;
-	double sig_tot, nH2O_tot;
+	double sig_tot;
 	for(i=1;i<=prms.Nt;i++){	// Time Step (START) 
 		//for(ist=0;ist<nst;ist++) st[ist].xy2crv(rev,PTC);
 		prms.itime=i;	
-		printf("i=%d\n",i);
 		//for(j=0;j<np;j++) PTC[j].scale(i,prms.dt,rev);
 		for(j=0;j<np;j++) PTC[j].x2xh(rev);
 		wll.disp(prms,i);
@@ -578,8 +552,6 @@ int main(){
 		UE=VDF(rev,sbcll,PTC,prms.iprd,prms.sig,prms.Eps,dS1); // Potential Energy
 		if(i==1) prms.UE0=fabs(UE)/prms.np*5.0; // Set Hydration Energy Scale (to 5)
 		UE*=(2.*prms.Eps0);
-		printf("UE=%le, prms.sig=%le, UE0=%le\n",UE,prms.sig,prms.UE0);
-		exit(-1);
 		//UE+=(VDF_L(rev,PTC,prms.iprd,prms.Eps,dS1,np,npl,indx)*2.*prms.Eps0);
 		Sab[0][0]+=dS1[0][0]; 
 		Sab[1][0]+=dS1[1][0];
@@ -608,11 +580,9 @@ int main(){
 
 //			--------- Velocity & Position Vectors Updated  ---------
 		for(j=0;j<np;j++){	// PARTICLE j (START)
-			printf("jpt/np=%d/%d\n",j,np);
 			PTC[j].incV(prms);
 			PTC[j].incX(prms,rev);
 		}
-
 
 //			---------  OUTPUT  ---------
 		if(i%ninc ==0){ 
@@ -629,23 +599,17 @@ int main(){
 		KE=0.0;	// total kinetic energy
 		Uhyd=0.0; // total hydration energy
 		sig_tot=0.0; // sum of charercteristic distance
-		nH2O_tot=0.0;
 		for(j=0;j<np;j++){
 			KE+=PTC[j].KE(prms.m0);
+			//Uhyd+=Uhyd_sig(prms.UE0,PTC[j].sigs[0]);
+			//Uhyd+=Uhyd_sig(prms.UE0,PTC[j].sigs[1]);
 			Uhyd+=uhyd.eval(PTC[j].sigs[0])*prms.UE0;
 			Uhyd+=uhyd.eval(PTC[j].sigs[1])*prms.UE0;
-			//(new) Uhyd+=NaMt.G_var.eval(PTC[j].nH2O[0])*prms.UE0;
-			//(new) Uhyd+=NaMt.G_var.eval(PTC[j].nH2O[1])*prms.UE0;
-
 			sig_tot+=PTC[j].sigs[0];
 			sig_tot+=PTC[j].sigs[1];
-
-			nH2O_tot+=PTC[j].nH2O[0];
-			nH2O_tot+=PTC[j].nH2O[1];
 		}
 		TK=KE/(1.5*prms.np*kb);	// Temperature
 		//if(i%100==0) printf("UE=%le, UH=%le, (UH/UE=%le)\n",UE,Uhyd,Uhyd/UE);
-		printf("TK=%lf\n",TK);
 
 		rev.smooth(Sab,TK,UE);
 		KE=KE/np*Na*1.e-03;
@@ -662,7 +626,7 @@ int main(){
 		fprintf(fsig,"%le %le %le %le\n",i*prms.dt,Uhyd,UnKJ,(sig_tot-0.9*np*2)*0.5);
 
 		int nswap,il,ir,npt,nadd;
-		double sigb,nH2Ob;
+		double sigb;
 		nadd=0;
 		for(ist=0;ist<nst;ist++) st[ist].xy2crv(rev,PTC);
 		//if(i%2==1){
@@ -671,39 +635,22 @@ int main(){
 			if(prms.mvw==2 && i%10==1){
 				//nadd=add_water(PTC,0.03,3.5,sbcll,rev, prms);
 				//Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms);
-				Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,uhyd,NaMt);
+				Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,uhyd);
 				//printf("Un=%le\n",Un);
 				printf(" s_tot=%lf ",(sig_tot-0.9*np*2)*0.5);
 			};
 
-			for(ist=0;ist<nst;ist++) st[ist].wsmooth(rev,PTC,NaMt);
+			for(ist=0;ist<nst;ist++) st[ist].wsmooth(rev,PTC);
 			for(j=0;j<nst;j++){ // START_SHEET_j
 				il=st[j].list[0];	// end particle 1
 				sigb=0.5*(PTC[il].sigs[0]+PTC[il].sigs[1]); 
 				PTC[il].sigs[0]=sigb;
 				PTC[il].sigs[1]=sigb;
-
-				/*
-				nH2Ob=0.5*(PTC[il].nH2O[0]+PTC[il].nH2O[1]); 
-				PTC[il].nH2O[0]=nH2Ob;
-				PTC[il].nH2O[1]=nH2Ob;
-				PTC[il].sigs[0]=NaMt.hz.eval(nH2Ob);
-				PTC[il].sigs[0]=PTC[il].sigs[1];
-				*/	
-
 				npt=st[j].Np;
 				ir=st[j].list[npt-1];	// end particle 2
 				sigb=0.5*(PTC[ir].sigs[0]+PTC[ir].sigs[1]);
 				PTC[ir].sigs[0]=sigb;
 				PTC[ir].sigs[1]=sigb;
-
-				/*
-				nH2Ob=0.5*(PTC[ir].nH2O[0]+PTC[ir].nH2O[1]); 
-				PTC[ir].nH2O[0]=nH2Ob;
-				PTC[ir].nH2O[1]=nH2Ob;
-				PTC[ir].sigs[0]=NaMt.hz.eval(nH2Ob);
-				PTC[ir].sigs[0]=PTC[ir].sigs[1];
-				*/
 			}
 		}
 		if((ismp%nsmp)==0){

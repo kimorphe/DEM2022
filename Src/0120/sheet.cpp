@@ -301,7 +301,7 @@ void SHEET::xy2crv(REV rev, PRTCL *PTC){
 */
 };
 
-void SHEET::wsmooth(REV rev, PRTCL *PTC, CLAY NaMt){
+void SHEET::wsmooth(REV rev, PRTCL *PTC){
 	int i,ipt,jpt;
 	int j,j1,j2,jd;
 	int nsmp=3;
@@ -311,15 +311,12 @@ void SHEET::wsmooth(REV rev, PRTCL *PTC, CLAY NaMt){
 	double *sigp=(double *)malloc(sizeof(double)*Np);
 	double *sigm=(double *)malloc(sizeof(double)*Np);
 
-	double *nwp=(double *)malloc(sizeof(double)*Np);
-	double *nwm=(double *)malloc(sizeof(double)*Np);
-
 	int count;
 	for(i=0; i<Np; i++){
 		j1=i-nsmp;
 		j2=i+nsmp;
-		sigp[i]=0.0; sigm[i]=0.0;
-		nwp[i]=0.0; nwm[i]=0.0;
+		sigp[i]=0.0;
+		sigm[i]=0.0;
 		count=0;
 		for(j=j1; j<=j2; j++){ 
 			jd=j;
@@ -328,24 +325,20 @@ void SHEET::wsmooth(REV rev, PRTCL *PTC, CLAY NaMt){
 			if(j<0) continue;
 			if(j>=Np) continue;
 			jpt=list[jd];
-			sigp[i]+=PTC[jpt].sigs[0]; sigm[i]+=PTC[jpt].sigs[1];
-			//nwp[i]+=PTC[jpt].nH2O[0]; nwm[i]+=PTC[jpt].nH2O[1];
+			sigp[i]+=PTC[jpt].sigs[0];
+			sigm[i]+=PTC[jpt].sigs[1];
 			count++;
 		}
+		//sigp[i]/=nd;
+		//sigm[i]/=nd;
 		sigp[i]/=count;
 		sigm[i]/=count;
-		//nwp[i]/=count; nwm[i]/=count;
 	}
 	for(i=0;i<Np;i++){
 		ipt=list[i];
 		PTC[ipt].sigs[0]=sigp[i];
 		PTC[ipt].sigs[1]=sigm[i];
-		//PTC[ipt].nH2O[0]=nwp[i]; PTC[ipt].nH2O[1]=nwm[i];
-		PTC[ipt].sigs[0]=NaMt.hz.eval(nwp[i]);
-		PTC[ipt].sigs[1]=NaMt.hz.eval(nwm[i]);
 	}
 	free(sigp);
 	free(sigm);
-	free(nwp);
-	free(nwm);
 };

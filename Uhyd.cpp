@@ -110,7 +110,6 @@ int N2H:: load(char fname[128]){
 	while(fgets(cbff,128,fp)!=NULL){
 		ndat++;
 	};
-	printf("#ndat=%d\n",ndat);
 	fclose(fp);
 
 	hz=(double *)malloc(sizeof(double)*ndat);
@@ -215,6 +214,7 @@ int R2H::load(char fname[128]){
 
 	//printf("rH_lim=%lf %lf\n",rH_min,rH_max);
 	//printf("hz_lim=%lf %lf\n",hmin,hmax);
+	return(ndat);
 };
 
 //-----------------------------------------------------------
@@ -222,6 +222,7 @@ int main(){
 
 	char fname1[128]="MD_Data/NaMt.dat";
 	char fname2[128]="rH_x.dat";
+	char fnout[128]="Uhyd.out";
 
 	N2H n2h_MD;	// MD-generated swelling curve
 	n2h_MD.load(fname1);
@@ -229,30 +230,13 @@ int main(){
 	R2H r2h_XRD;	// XRD-meassured swelling curve
 	r2h_XRD.load(fname2);
 
-/*
-	int i;
-	double n1=n2h_MD.nmin;
-	double n2=n2h_MD.nmax;
-	int N=101;
-	double dn=(n2-n1)/(N-1);
-	double nw,hz_n,rh_n; 
-	printf("# n(H2O), hz, rH\n");
-	for(i=0;i<N;i++){
-		nw=n1+dn*i;
-		hz_n=n2h_MD.get_h(nw); // MD-swelling curve
-		rh_n=r2h_XRD.get_rH(hz_n);
-		printf("%lf, %lf, %lf\n",nw,hz_n,rh_n);
-	};
-*/
 	// rH --> hz --> n(H2O)
 	int i,N=101;
 	double drH=1./(N-1);
 	double hz_r,nw_r;
-	printf("# rH, hz, n(H2O)\n");
 	for(i=0;i<N;i++){
 		hz_r=r2h_XRD.get_hz(i*drH);
 		nw_r=n2h_MD.get_nH2O(hz_r);
-//		printf("%lf, %lf, %lf\n",i*drH,hz_r,nw_r);
 	};
 
 	i=0;
@@ -263,23 +247,49 @@ int main(){
 	hz_r=r2h_XRD.get_hz(i*drH);
 	nw_r=n2h_MD.get_nH2O(hz_r);
 	double nmax=nw_r;
-//	printf("nmin=%lf, nmax=%lf\n",nmin,nmax);
 
 
 	double dn=(nmax-nmin)/(N-1);
-	double nw,hz_n,rh_n,mu; 
-	printf("# n(H2O), hz, rH\n");
-	double beta=1./18.;
-	double Gh=0.0;
+	double nw; //,hz_n,rh_n,mu; 
+
+    	double kB=1.380649*1.e-23;  // [J/K] Boltzmann constant
+    	double NA=6.02214076*1.e23; // [/mol] Avogadro's number
+	double R_gas=kB*NA; //[J/K/mol] Gas Constant
+    	double T=300;   // [K] Tempearture
+	double mu_sat=-44.5*1.e03;  // [J/mol] chem. potential at vapor saturation
+    	double beta=R_gas*T/abs(mu_sat); // RT/mu_sat 
+	double dGn;
+	double mu_prev=0.0;
+	double mu0=abs(mu_sat)*1.e-03; // [kJ/mol]
+
+	double *hz_n=(double *)malloc(sizeof(double)*N);
+	double *rh_n=(double *)malloc(sizeof(double)*N);
+	double *mu_var=(double *)malloc(sizeof(double)*N);
+	double *Gn=(double *)malloc(sizeof(double)*N);
+	double *Gn_sat=(double *)malloc(sizeof(double)*N);
+	double Gvar=0.0,Gsat=0.0;
 	for(i=N-1;i>=0;i--){
 		nw=nmin+dn*i;
-		hz_n=n2h_MD.get_h(nw); // MD-swelling curve
-		rh_n=r2h_XRD.get_rH(hz_n);
+		hz_n[i]=n2h_MD.get_h(nw); // MD-swelling curve
+		rh_n[i]=r2h_XRD.get_rH(hz_n[i]);
 		//mu=-1.+beta*log(rh_n+1.e-08);
-		mu=beta*log(rh_n+1.e-08);
-		printf("%lf, %lf, %lf, %lf, %lf\n",nw,hz_n,rh_n,mu,Gh);
-		Gh+=(-mu);
+		mu_var[i]=R_gas*T*log(rh_n[i]+1.e-08);	
+		Gn[i]=Gvar;
+		Gn_sat[i]=Gsat;
+		dGn=-(mu_var[i]+mu_prev)*0.5*dn;
+		Gvar+=dGn;
+		Gsat+=(mu0*dn);
+		mu_prev=mu_var[i];
 	};
+	FILE *fp=fopen(fnout,"w");
+	fprintf(fp,"%d\n",N);
+	fprintf(fp,"# n(H2O), hz[nm], R.H., mu_var, mu_sat(kJ/mol), del{G(n)}(nolinear part of G), G(n)_sat[kJ/mol]\n");
+	for(i=0;i<N;i++){
+		nw=nmin+dn*i;
+		fprintf(fp,"%lf, %lf, %lf, %lf, %lf, %lf, %lf\n",nw,hz_n[i],rh_n[i],mu_var[i]*1.e-03,mu_sat*1.e-03,Gn[i]*1.e-03,Gn_sat[i]);
+	}
+
+	printf("Output File --> %s\n",fnout);
 
 	return(0);
 };
