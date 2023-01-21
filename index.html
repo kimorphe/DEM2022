@@ -169,8 +169,8 @@ CG系の粒子間相互作用エネルギーは，次のようなLenard-Jones(LJ
 \(\sigma\)はLJポテンシャルの特性距離を表し，ポテンシャルの深さを
 決めるパラメータ\(\varepsilon\)の値は
 \begin{equation}
-\varepsilon=1.0\times 10^{-19}, \ \ ({\rm Nm})
-\label{eqn:eps_num}
+	\varepsilon=1.0\times 10^{-19}, \ \ ({\rm Nm})
+	\label{eqn:eps_num}
 \end{equation}
 である．
 </li>
@@ -270,33 +270,80 @@ CG系の粒子間相互作用エネルギーは，次のようなLenard-Jones(LJ
 
 </li>
 <li>01/19(Thr.)<br>
-	MD計算と実験で得られた膨潤曲線を，CG-MD計算に利用するための準備<br>
-
-	<a href="MD_Data/NaMt.dat">MD_Data/NaMt.dat</a>から
-	n(H2O)--h間のマッピング作成プログラム=
-	<a href="MD_Data/NHmap.cpp">(MD_Data/NHmap.cpp)</a> <br>
-	出力ファイル:<br>
-	n->h mapping(元データそのまま):
-	<a href="MD_Data/n2h.dat">MD_Data/n2h.dat</a> <br>
-	h->2 mapping(等間隔グリッドへ補間):
-	<a href="MD_Data/h2n.dat">MD_Data/h2n.dat</a> <br>
-	を生成．
-	<br>
-	<br>
-	XRD膨潤曲線データ(<a href="rH_x.dat">rH_x.dat</a>)の書式変更(先頭行にデータ数を追加)<br>
-	連動して<a href="uhyd.py">uhyd.py</a>のデータ読み込みmethodを修正<br>
+	MD計算とXRD実験で得られた膨潤曲線をCG-MD計算に利用するための準備<br>
+	<ul>
+	<li>
+		<a href="MD_Data/NHmap.cpp">MD_Data/NHmap.cpp</a>
+		\(n(H2O) \rightarrow h\)間のマッピング<br>
+		入力データ:
+		<a href="MD_Data/NaMt.dat">MD_Data/NaMt.dat</a> <br>
+		出力データ:
+		<a href="MD_Data/n2h.dat">MD_Data/n2h.dat</a> 
+		: \(n(H_2O)\rightarrow h \) mapping(元データそのまま), 
+		<a href="MD_Data/h2n.dat">MD_Data/h2n.dat</a> 
+		: \(h \rightarrow n(H_2O)\) mapping (等間隔グリッドへ補間)
+	</li>
+	<li>
+	XRD膨潤曲線データ(<a href="rH_x.dat">rH_x.dat</a>)の書式変更. 先頭行にデータ数を追加. 
+	これに連動して<a href="uhyd.py">uhyd.py</a>のデータ読み込みmethodを修正
+	</li>
+	<li>
 	層間距離hでの積分によって水和自由エネルギーを計算しようとしたが、粒子数nでの積分結果と合わない(uhyd.py)<br>
-	dn/dhが平滑化した結果を元にして計算していることが原因として疑われる．結局，\(n \rightarrow h \rightarrow r_H \)
-	と変換して，nで積分する形に修正
-	<br>
-	<br>
-	C/C++プログラム(<a href="Uhyd.cpp">Uhyd.cpp</a>)での水和自由エネルギーデータを作成.<br>
-	出力ファイルは<a href="Uhyd.out">Uhyd.out</a>. これをDEMプログラムへインポートする予定.<br>
+	\(\frac{dn}{dh}\)が平滑化した結果を元にして計算していることが原因として疑われる．結局，
+	\begin{equation}
+			n(H_2O) \rightarrow h \rightarrow r_H 
+		\label{eqn:n2h_mapping}
+	\end{equation}
+	と変換し，\(n\)で積分する形に修正
+	</li>
+	<li>
+	<a href="Uhyd.cpp">Uhyd.cpp</a>: 化学ポテンシャル，水和自由エネルギーデータの作成.
+	出力ファイル:<a href="Uhyd.out">Uhyd.out</a>をDEMプログラムへインポートする予定.
+	</li>
+	</ul>
+<br>
+<li>01/20(Fri.)<br>
+	CG-MDプログラムのupdateを開始．
+	<ul>
+	<li> トラブル発生：若干の修正を加えたプログラムが正しく動作しない!  </li>
+	<li> プログラムを印刷して修正箇所を中心に確認したがエラーが発見できず(半日以上を費やす)</li>
+	<li> スタートバージョンからやり直して解消(おそらく，header fileの更新が反映されていなかったことが原因</li>
+	<li> source.o がsource.cppとsource.hに依存することをmakefileに記述すること!!!</li>
+	<li> CLAYクラスを追加<a href="Src/uhyd_smec.cpp">Src/uhyd_smec.cpp</a></li>
+	<li> PRTCLクラスのメンバーにnH2O(水和モル数）を追加</li>
+	<li> 式(\ref{eqn:n2h_mapping})の変換をCLAYクラスで実装</li>
+	<li> move_water, SHEET:wsmooth, Uhydの計算を修正nH2O式(\ref{eqn:n2h_mappig})の変換をCLAYクラスで実装</li>
+	<li> MC計算のperturbationを全てdhからdn(H2O)に切り替え</li>
+	<li> エネルギーの単位を，式(\ref{eqn:eps_num})の$\varepsilon$に統一.</li>
+	<li> 入力データの単位はkJ/molとnm.</li>
+	<li> データフォルダDATA/SmecMu03で、計算が進むことを確認(26:30位までかかったよ)</li>
+	</ul>
+
+</li>
+<li>01/21(Sat.)<br>
+	<ul>
+	<li>昨日分のlog book(本紙)を記入</li>
+	<li>CG-MD計算に利用する膨潤法則のグラフ
+		<figure>
+		<center>
+		<img src="Src/swelling.png", width=400,height=500></img> 
+		<figcaption>水和モル数n(H2O)と層間距離および相対湿度の関係</figcaption>
+		</center>
+		</figure>
+	</li>
+	<li>CG-MD計算に利用する化学ポテンシャルとその積分として得られる水和エネルギー
+		<figure>
+		<center>
+		<img src="Src/chemical_potential.png", width=400,height=500></img> 
+		<figcaption>水和モル数n(H2O)と化学ポテンシャルおよび自由エネルギーの関係. 重エネルギーは
+		非線形項のみを表示.
+		</figcaption>
+		</center>
+		</figure>
+	</li>
+	</ul>
 </li>
 </ul>
-<br>
-CG-MDのLJポテンシャル、d-N変換式の定式化
-<br>
 <h2>References</h2>
 <ul>
 	<li>H. Yamada, H. Nakazawa, H. Hashizume, S. Shimomura, and T. Watanabe,

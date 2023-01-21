@@ -83,7 +83,7 @@ int R2H::load(char fname[128]){
 };
 
 int main(){
-	char fname[128]="rH_x.dat";
+	char fname[128]="../rH_x.dat";
 	R2H rh;
 	rh.load(fname);
 

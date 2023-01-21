@@ -5,7 +5,7 @@
 	</header>
 <body>
 	<center>
-		<h2>DEM Program 2022</h2>
+		<h1>DEM Program 2022</h1>
 	</center>
 <h2>C/C++ Srouce</h2>
 <ul>
@@ -33,19 +33,46 @@
 		<li> <a href="vec2.cpp">vec2.cpp</a> </li>
 		</ul>
 	</li>
-	<li> Preprocessors:
+	<li> Pre-processors:
 		<ul>
 		<li> <a href="gen_sheet.cpp">gen_sheet.cpp</a> --> ../gen_sheet</li>
+		<li> <a href="Uhyd.cpp">Uhyd.cpp </a>(膨潤法則に関するデータ)
+			<a href="Uhyd.out">Uhyd.out</a>の作成)<br>
+			入力データ: 
+			<a href="../MD_Data/NaMt.dat">MD膨潤曲線</a>="../MD_Data/NaMt.dat",
+			<a href="../rH_x.dat">XRD膨潤曲線</a>="../rH_x.dat"
+		</li>
+		<li>
+			<a href="RHmap.cpp">RHmap.cpp</a>R.Hとh(層間距離)のデータを補間. CG-MDには使用しない途中段階のプログラム.
+		</li>
 		<li> <a href="mkinp.cpp">mkinp.cpp</a> (用途不明, 単独compile可能)</li>
 	</ul>
 	</li>
 </ul>
+<h2>Python Script</h2>
+	<a href="plot_Uhyd.py">plot_Uhyd.py</a>: CG-MD計算に用いる膨潤法則のグラフを表示
+	<br>
+	グラフの画像は<a href="swelling.png">swelling.png</a>,
+	<a href="chemical_potential.png">chemical_potential.png</a>
 <h2>DATA</h2>
-<ul>
-	<li> <a href="../DATA/Phase2Fix/index.html">(data directory 1)</a></li>
-</ul>
+	ファイル一覧 
+	<ul>
+		<li> <a href="../DATA/Phase2Fix/index.html">../DATA/Phase2Fix</a> </li>
+		<li> <a href="../DATA/Phase1/index.html">../DATA/Phase1</a> </li>
+		<li> <a href="../DATA/SmecMu03/index.html">../DATA/SmechMu03</a> </li>
+	</ul>
 <h2>Journal</h2>
 <ul>
+	<li>2023/01/20(Fri.)<br>
+		<ul>
+			<li> CLAYクラスをdem.cppに追加 </li>
+			<li> CLAY(インスタンスはNaMt)で膨潤法則を表現</li>
+			<li> 入力データにUhyd.outを追加</li>
+			<li> PRTCクラスにn(H2O)属性を追加</li>
+			<li> エネルギーの単位を$\varepsilon=1.0\times 10^{-19}$[J]に統一</li>
+			<li> MC計算をdn(H2O)に対応するエネルギー増分で駆動</li>
+		</ul>
+	</li>
 	<li>2023/01/17(Tue.)<br>
 		最初の作業=テスト入力データの用意(昨年度緩和計算に用いたデータを使用)<br>
 		水和エネルギー関数の設定方法を確認(DEMプログラム内での処理, uhyd0.cpp(2020年), uhyd_smec.cpp(2021年))<br>

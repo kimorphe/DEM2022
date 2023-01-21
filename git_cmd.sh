@@ -5,6 +5,7 @@ git add Src/*.h
 git add Src/*.cpp
 git add Src/makefile
 git add Src/*.html
+git add Src/*.py
 git add Src/0120/*
 
 git add *.cpp
@@ -18,6 +19,7 @@ git add *.png
 git add MD_Data/*
 
 git add DATA/*.py
+
 git add DATA/*.html
 git add DATA/Phase1/*.html
 git add DATA/Phase1/dem.inp

@@ -1,15 +1,20 @@
-all: gen_sheet  dem
+all: gen_sheet dem mkUhyd RHmap
 
 gen_sheet: gen_sheet.o
 	g++ -o gen_sheet gen_sheet.cpp
-
 gen_sheet.o: gen_sheet.cpp
 	g++ -c gen_sheet.cpp
 
+# SWELLING LAW DATA
+mkUhyd: Uhyd.cpp
+	g++ -o mkUhyd Uhyd.cpp
+RHmap: RHmap.cpp
+	g++ -o RHmap RHmap.cpp
+
+# CG-MD PROGRAM
 dem: dem.o force.o control.o prtcl2d.o sheet.o vec2.o spline.o uhyd_smec.o
 	g++ -o dem dem.o force.o control.o prtcl2d.o sheet.o vec2.o spline.o uhyd_smec.o
 	mv dem  ../
-
 dem.o: dem.cpp dem.h
 	g++ -c dem.cpp
 force.o: force.cpp dem.h

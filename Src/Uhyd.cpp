@@ -220,8 +220,8 @@ int R2H::load(char fname[128]){
 //-----------------------------------------------------------
 int main(){
 
-	char fname1[128]="MD_Data/NaMt.dat";
-	char fname2[128]="rH_x.dat";
+	char fname1[128]="../MD_Data/NaMt.dat";
+	char fname2[128]="../rH_x.dat";
 	char fnout[128]="Uhyd.out";
 
 	N2H n2h_MD;	// MD-generated swelling curve
