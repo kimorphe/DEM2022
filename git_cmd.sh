@@ -17,6 +17,7 @@ git add *.png
 
 git add MD_Data/*
 
+git add DATA/*.py
 git add DATA/*.html
 git add DATA/Phase1/*.html
 git add DATA/Phase1/dem.inp
@@ -40,6 +41,7 @@ git add DATA/SmecMu03/sheet.dat
 git add DATA/SmecMu03/ptc.dat
 git add DATA/SmecMu03/wall.dat
 git add DATA/SmecMu03/bbox.dat
+git add DATA/SmecMu03/Uhyd.out
 
 git add *.dat
 

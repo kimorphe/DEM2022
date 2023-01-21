@@ -51,7 +51,7 @@ void CLAY::load(char fname[128]){
 
 	char cbff[256];
 	fgets(cbff,256,fp);
-	puts(cbff);
+	double Na=6.022e+23;
 
 	int i;
 	double nw, hn, rn, mvn,gvn, gsn; 
@@ -62,22 +62,40 @@ void CLAY::load(char fname[128]){
 		mu_var.x[i]=nw;
 		G_var.x[i]=nw;
 
-		hz.y[i]=hn;
+		hz.y[i]=hn;	//[nm]
 		rH.y[i]=rn;
-		mu_var.y[i]=mvn;
-		G_var.y[i]=gvn;
+		mu_var.y[i]=mvn*1.e03/Na; // [J]
+		G_var.y[i]=gvn*1.e03/Na;  // [J]
 	};
+	mu_sat=mu_sat*1.e03/Na; //[J]
 
 
 	double n1,n2;
-	n1==hz.x[0];
+	n1=hz.x[0];
 	n2=hz.x[ndat-1];
 	hz.set_xlim(n1,n2);
 	rH.set_xlim(n1,n2);
 	mu_var.set_xlim(n1,n2);
 	G_var.set_xlim(n1,n2);
+	nw_min=n1;
+	nw_max=n2;
 
 	fclose(fp);
+};
+void CLAY::change_unit(double unit){
+	mu_sat/=unit;
+	for(int i=0;i<ndat;i++){
+		mu_var.y[i]/=unit;
+		G_var.y[i]/=unit;
+	};
+};
+void CLAY::print(){
+	printf("-------------------------------------------------\n");
+	printf("mu_sat=%le \n",mu_sat);
+	printf("# n(H2O), hz[nm], R.H, mu_var, G_var\n");
+	for(int i=0;i<ndat;i++){
+		printf("%le, %le, %le, %le, %le\n",hz.x[i],hz.y[i],rH.y[i],mu_var.y[i],G_var.y[i]);
+	};
 };
 
 //--------------------------------------------

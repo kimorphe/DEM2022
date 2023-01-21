@@ -58,7 +58,6 @@ class Curve2D{	// plane (2D) curve
 	private:
 	protected:
 };
-double Uhyd_sig(double U0, double sig);
 class Crv{
 	public:
 		int np;
@@ -77,7 +76,6 @@ class Crv{
 		double y2x(double yval);
 	private:
 };
-
 class CLAY{
 	public:
 		void load(char fname[128]);
@@ -87,6 +85,9 @@ class CLAY{
 		Crv G_var; // hydration free energy 
 		double mu_sat; // chemical potential at saturated R.H.
 		int ndat;
+		void change_unit(double unit);
+		void print();
+		double nw_min,nw_max;
 	private:
 	protected:
 };
@@ -397,3 +398,5 @@ void restart(
 	int nst,
 	SHEET *st
 );
+double Uhyd_sig(double U0, double sig);
+
