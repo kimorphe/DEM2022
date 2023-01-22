@@ -122,7 +122,8 @@ double add_water(
 		SUBCELL *sbcll,// Subcells 
 		REV rev,	// REV data
 		CNTRL prms,	// Basic DEM  Parameters
-		CLAY NaMt
+		CLAY NaMt,
+		int *counter
 ){
 	int np=prms.np;
 	int ipt,iside,isgn;
@@ -205,9 +206,9 @@ double add_water(
 		}
 	}
 	Nadd+=nadd;
-	printf("   [dN=%d, DN=%d]\n",nadd,Nadd);
+	//printf("   [dN=%d, DN=%d]\n",nadd,Nadd);
+	*counter=Nadd;
 //	return(nadd);
-	//printf("Utot=%lf, kbT=%lf, prob=%le, rnd=%lf\n",Utot,kbT,prob,rnd);
 	return(Gn);	// return -mu_ex*dn
 };
 
@@ -232,6 +233,7 @@ int main(){
 	char fnerg[128]="energy.out"; //(out)
 	char fnstr[128]="stress.out"; //(out)
 	char fnptcl[128]="ptcl.out";  //(out)
+	char fnMC[128]="mc_log.out";  //(out)
 
 //	------------- READ DEM PARAMETERS -------------
 	CNTRL prms;
@@ -246,18 +248,21 @@ int main(){
 	join_chars(prms.Dir,fnstr);
 	join_chars(prms.Dir,fnptcl);
 	join_chars(prms.Dir,fnump);
+	join_chars(prms.Dir,fnMC);
 	mkdir(prms.Dir,0777);	// Make Output Directory
 
 	puts(fnerg);
 	puts(fnstr);
 	puts(fnptcl);
 	puts(fnump);
+	puts(fnMC);
 		// Opne Files
 	FILE *fp,*ftmp;
 	FILE *ferg=fopen(fnerg,"w");
 	if(ferg==NULL) show_msg(fnerg);
 	FILE *fstr=fopen(fnstr,"w");
 	FILE *fsig=fopen("sig_sum.out","w");
+	FILE *fMClog=fopen(fnMC,"w");
 
 	double Sab[2][2],dS1[2][2],dS2[2][2];
 	double m0;
@@ -423,6 +428,7 @@ int main(){
 	SUBCELL *sbcll;
 	double Un=0.0,UnKJ;
 	double sig_tot,nH2O_tot,nwp,nwm;
+	int counter=0;
 	for(i=1;i<=prms.Nt;i++){	// Time Step (START) 
 		//for(ist=0;ist<nst;ist++) st[ist].xy2crv(rev,PTC);
 		prms.itime=i;	
@@ -540,9 +546,10 @@ int main(){
 			//if(prms.mvw==2 && i%10==1){
 			if(prms.mvw==2 && i%5==1){
 				//Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,uhyd,NaMt);
-				Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,NaMt);
+				Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,NaMt,&counter);
 				//printf("Un=%le\n",Un);
 				//printf(" s_tot=%lf ",(sig_tot-0.9*np*2)*0.5);
+				fprintf(fMClog,"%le, %le, %d\n",i*prms.dt,rho_d,counter);
 			};
 
 			for(ist=0;ist<nst;ist++) st[ist].wsmooth(rev,PTC,NaMt);

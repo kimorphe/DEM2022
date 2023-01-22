@@ -133,6 +133,7 @@ class CNTRL{	// DEM implementation controle parameters
 		//double mu;
 		double RH_ex;	// R.H. of water resarvoir
 		int itime; // current time
+		int Nadd; 
 	private:
 };
 class WALL{	// WALL configuration and movement 

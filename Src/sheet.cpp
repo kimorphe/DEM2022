@@ -304,8 +304,8 @@ void SHEET::xy2crv(REV rev, PRTCL *PTC){
 void SHEET::wsmooth(REV rev, PRTCL *PTC, CLAY NaMt){
 	int i,ipt,jpt;
 	int j,j1,j2,jd;
-	//int nsmp=3;
-	int nsmp=1;// 2023/01/22(test)
+	int nsmp=3;// 2023/01/22(test)
+	//int nsmp=1;// 2023/01/22(test)
 	int nd=nsmp*2+1;
 	int nsum;
 	double dat;

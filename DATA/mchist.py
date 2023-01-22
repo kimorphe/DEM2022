@@ -58,7 +58,7 @@ class PTCS:
 		self.Np=Np
 		fp.close();
 	def hist(self,ax):
-            sh=np.concatenate([self.sigp,self.sigm])
+            sh=np.hstack([self.sigp,self.sigm])
             #sh-=0.9;
             #sh*=0.5;
             ax.hist(sh,bins=25)
@@ -125,6 +125,7 @@ class PTCS:
 			st+=1;
 
 		return plts;
+
 if __name__=="__main__":
 
     fig=plt.figure(figsize=[12,4])
@@ -139,19 +140,30 @@ if __name__=="__main__":
     narg=len(args)
     if narg >1:
         num=int(args[1])
-    fname="x"+str(num)+".dat"
 
-    ptc=PTCS(fname);
+    #nums=range(250)
+    nums=range(125)
+    Hz=[]
+    for num in nums:
+        fname="x"+str(num)+".dat"
+        ptc=PTCS(fname);
+        #ptc.plot_w(ax)
+        hz=np.concatenate([ptc.sigp,ptc.sigm])
+        Hz.append(hz)
+    Hz=np.array(Hz)
+    print(np.shape(Hz))
+    im=ax.imshow(Hz,aspect="auto",cmap="jet",interpolation="none",origin="lower",vmin=12,vmax=16)
+    plt.colorbar(im)
 
-    ptc.plot_w(ax)
-    ptc.plot_w2(ax,nums)
 
-    print("sum(sig)=",np.sum(ptc.sigp)+np.sum(ptc.sigm)-ptc.Np*0.9*2)
-    ax.set_xlim([0,ptc.Np])
-    ax.set_ylim([9,16])
+    print(np.shape(hz))
+    #ptc.plot_w2(ax,nums)
+
+    #ax.set_xlim([0,ptc.Np])
+    #ax.set_ylim([9,16])
     ax.tick_params(labelsize=14)
 
-    fig2=plt.figure()
-    ax2=fig2.add_subplot(111)
-    ptc.hist(ax2)
+    #fig2=plt.figure()
+    #ax2=fig2.add_subplot(111)
+    #ptc.hist(ax2)
     plt.show()
