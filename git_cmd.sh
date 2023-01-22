@@ -45,6 +45,14 @@ git add DATA/SmecMu03/wall.dat
 git add DATA/SmecMu03/bbox.dat
 git add DATA/SmecMu03/Uhyd.out
 
+git add DATA/Test/*.html
+git add DATA/Test/dem.inp
+git add DATA/Test/sheet.dat
+git add DATA/Test/ptc.dat
+git add DATA/Test/wall.dat
+git add DATA/Test/bbox.dat
+git add DATA/Test/Uhyd.out
+
 git add *.dat
 
 

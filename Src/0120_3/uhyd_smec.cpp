@@ -62,12 +62,12 @@ void CLAY::load(char fname[128]){
 		mu_var.x[i]=nw;
 		G_var.x[i]=nw;
 
-		hz.y[i]=hn;	// [nm]
-		rH.y[i]=rn;	// [-]
-		mu_var.y[i]=mvn*1.e03/Na; // [kJ/mol] --> [J]
-		G_var.y[i]=gvn*1.e03/Na;  // [kJ/mol] --> [J]
+		hz.y[i]=hn;	//[nm]
+		rH.y[i]=rn;
+		mu_var.y[i]=mvn*1.e03/Na; // [J]
+		G_var.y[i]=gvn*1.e03/Na;  // [J]
 	};
-	mu_sat=mu_sat*1.e03/Na; //[kJ/mol] --> [J]
+	mu_sat=mu_sat*1.e03/Na; //[J]
 
 
 	double n1,n2;
@@ -186,7 +186,6 @@ void Crv::smooth(int nsmp){
 		y[i]=sum/(2*N+1);
 	};
 };
-/*
 void Crv::trend(int type,double amp_wv){
 	if(type==0){
 		double alph=2.0;
@@ -202,7 +201,6 @@ void Crv::trend(int type,double amp_wv){
 	};
 
 };
-*/
 double Crv::eval(double xval){
 	double yval;
 

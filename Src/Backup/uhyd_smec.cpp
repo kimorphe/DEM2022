@@ -26,79 +26,7 @@ class Crv{
 		double eval(double xval);
 	private:
 };
-class CLAY{
-	public:
-		void load(char fname[128]);
-		Crv hz; // basal spacing [nm]
-		Crv rH; // relative humidity
-		Crv mu_var; // chemical potential (nolineary varying part) [J/particle/face]
-		Crv G_var; // hydration free energy 
-		double mu_sat; // chemical potential at saturated R.H.
-		int ndat;
-	private:
-	protected:
-};
 */
-void CLAY::load(char fname[128]){
-	FILE *fp=fopen(fname,"r");
-	if(fp==NULL) show_msg(fname);
-	
-	fscanf(fp,"%d\n",&ndat);
-	hz.setup(ndat);
-	rH.setup(ndat);
-	mu_var.setup(ndat);
-	G_var.setup(ndat);
-
-	char cbff[256];
-	fgets(cbff,256,fp);
-	double Na=6.022e+23;
-
-	int i;
-	double nw, hn, rn, mvn,gvn, gsn; 
-	for(i=0;i<ndat;i++){
-		fscanf(fp,"%lf, %lf, %lf, %lf, %lf, %lf, %lf\n",&nw, &hn,&rn,&mvn,&mu_sat,&gvn,&gsn);
-		hz.x[i]=nw; 
-		rH.x[i]=nw; 
-		mu_var.x[i]=nw;
-		G_var.x[i]=nw;
-
-		hz.y[i]=hn;	// [nm]
-		rH.y[i]=rn;	// [-]
-		mu_var.y[i]=mvn*1.e03/Na; // [kJ/mol] --> [J]
-		G_var.y[i]=gvn*1.e03/Na;  // [kJ/mol] --> [J]
-	};
-	mu_sat=mu_sat*1.e03/Na; //[kJ/mol] --> [J]
-
-
-	double n1,n2;
-	n1=hz.x[0];
-	n2=hz.x[ndat-1];
-	hz.set_xlim(n1,n2);
-	rH.set_xlim(n1,n2);
-	mu_var.set_xlim(n1,n2);
-	G_var.set_xlim(n1,n2);
-	nw_min=n1;
-	nw_max=n2;
-
-	fclose(fp);
-};
-void CLAY::change_unit(double unit){
-	mu_sat/=unit;
-	for(int i=0;i<ndat;i++){
-		mu_var.y[i]/=unit;
-		G_var.y[i]/=unit;
-	};
-};
-void CLAY::print(){
-	printf("-------------------------------------------------\n");
-	printf("mu_sat=%le \n",mu_sat);
-	printf("# n(H2O), hz[nm], R.H, mu_var, G_var\n");
-	for(int i=0;i<ndat;i++){
-		printf("%le, %le, %le, %le, %le\n",hz.x[i],hz.y[i],rH.y[i],mu_var.y[i],G_var.y[i]);
-	};
-};
-
-//--------------------------------------------
 void Crv::load(char fname[128]){
 	FILE *fp=fopen(fname,"r");
 	char cbff[128];
@@ -186,7 +114,6 @@ void Crv::smooth(int nsmp){
 		y[i]=sum/(2*N+1);
 	};
 };
-/*
 void Crv::trend(int type,double amp_wv){
 	if(type==0){
 		double alph=2.0;
@@ -202,14 +129,12 @@ void Crv::trend(int type,double amp_wv){
 	};
 
 };
-*/
 double Crv::eval(double xval){
 	double yval;
-
-	if(xval<=x[0]) return(y[0]);
-	if(xval>=x[np-1]) return(y[np-1]);
 	int indx=int((xval-x[0])/dx);
 	double xi=(xval-x[0])/dx-indx;
+	if(indx<0) return(y[0]);
+	if(indx>=np-1) return(y[np-1]);
 
 	double y1,y2;
 
@@ -217,19 +142,6 @@ double Crv::eval(double xval){
 	y2=y[indx+1];
 	yval=y1*(1.0-xi)+y2*xi;
 	return(yval);
-};
-double Crv::y2x(double yval){
-	if(yval<=y[0]) return(x[0]);
-	if(yval>=y[np-1]) return(x[np-1]);
-
-	int i1=0;
-	while(y[i1+1]<yval) i1++;
-	double x1=x[i1];
-	double x2=x[i1+1];
-	double xi=(yval-y[i1])/(y[i1+1]-y[i1]);
-	double eta=1.-xi;
-	return(x1*eta+x2*xi);
-
 };
 //-------------------------------------
 

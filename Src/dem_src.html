@@ -76,6 +76,9 @@
 	<li>2023/01/17(Tue.)<br>
 		最初の作業=テスト入力データの用意(昨年度緩和計算に用いたデータを使用)<br>
 		水和エネルギー関数の設定方法を確認(DEMプログラム内での処理, uhyd0.cpp(2020年), uhyd_smec.cpp(2021年))<br>
+		出力ディレクトリの動的作成(#include<sys/stat.h>, mkdir(dir_name,0777)で作成)<br>
+		不要部分をdem.cppから削除<br>
+		エネルギーの単位をkJ/mol/CG particleとなるように統一<br>
 	</li>
 </ul>
 </body>

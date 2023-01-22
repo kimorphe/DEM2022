@@ -28,7 +28,7 @@
 # periodic B.C. (1: yes, 2: no) in x- and y-directions  
  1 1
 # cntrl: 0: strain, 1: stress given 
- 0 
+ 1 
 # strain  exx & times (ta, tb)
   0.0 -0.0   0.0 1000.0  
 # strain  eyy & times (ta, tb)
@@ -38,13 +38,10 @@
 # strain  eyx & times (ta, tb)
   0.0  0.0   0.0 1000.0
 # pxx, pyy, pxy (GPa) ( used when cntrl==1)
- 5.0 5.0 0.1
+ 0.01 0.01 0.01
 # nave (number of data for moving average)
  24
-# relative humidity
-0.5
-
-
-
-# chemical potential
- 0.3
+# Relative humidity
+ 0.5
+## chemical potential
+# 0.3

@@ -49,7 +49,7 @@ void SHEET :: set_prms(
 		if(fabs(ri)< r2) r2=ri;
 	}
 
-	//printf("r1,r2=%lf %lf\n",r1,r2);
+	printf("r1,r2=%lf %lf\n",r1,r2);
 
 	sig_w=prms.sig;
 	sig_s=pow(2,0.16666667)*r1;
@@ -304,55 +304,48 @@ void SHEET::xy2crv(REV rev, PRTCL *PTC){
 void SHEET::wsmooth(REV rev, PRTCL *PTC, CLAY NaMt){
 	int i,ipt,jpt;
 	int j,j1,j2,jd;
-	//int nsmp=3;
-	int nsmp=1;// 2023/01/22(test)
+	int nsmp=3;
 	int nd=nsmp*2+1;
 	int nsum;
 	double dat;
-	//double *sigp=(double *)malloc(sizeof(double)*Np);
-	//double *sigm=(double *)malloc(sizeof(double)*Np);
+	double *sigp=(double *)malloc(sizeof(double)*Np);
+	double *sigm=(double *)malloc(sizeof(double)*Np);
+
 	double *nwp=(double *)malloc(sizeof(double)*Np);
 	double *nwm=(double *)malloc(sizeof(double)*Np);
 
 	int count;
-	double hp=0.,hm=0.;
 	for(i=0; i<Np; i++){
 		j1=i-nsmp;
 		j2=i+nsmp;
-		//sigp[i]=0.0; sigm[i]=0.0;
+		sigp[i]=0.0; sigm[i]=0.0;
 		nwp[i]=0.0; nwm[i]=0.0;
 		count=0;
 		for(j=j1; j<=j2; j++){ 
 			jd=j;
+			//if(j<0) jd=0;
+			//if(j>=Np) jd=Np-1;
 			if(j<0) continue;
 			if(j>=Np) continue;
 			jpt=list[jd];
-			//sigp[i]+=PTC[jpt].sigs[0];
-			//sigm[i]+=PTC[jpt].sigs[1];
-			nwp[i]+=PTC[jpt].nH2O[0];
-			nwm[i]+=PTC[jpt].nH2O[1];
+			sigp[i]+=PTC[jpt].sigs[0]; sigm[i]+=PTC[jpt].sigs[1];
+			//nwp[i]+=PTC[jpt].nH2O[0]; nwm[i]+=PTC[jpt].nH2O[1];
 			count++;
 		}
-		//sigp[i]/=count;
-		//sigm[i]/=count;
-		nwp[i]/=count;
-		nwm[i]/=count;
+		sigp[i]/=count;
+		sigm[i]/=count;
+		//nwp[i]/=count; nwm[i]/=count;
 	}
 	for(i=0;i<Np;i++){
 		ipt=list[i];
-		//PTC[ipt].sigs[0]=sigp[i];
-		//PTC[ipt].sigs[1]=sigm[i];
-
-		PTC[ipt].nH2O[0]=nwp[i];
-		PTC[ipt].nH2O[1]=nwm[i];
-
-		hp=NaMt.hz.eval(nwp[i]);
-		hm=NaMt.hz.eval(nwm[i]);
-		PTC[ipt].sigs[0]=hp;
-		PTC[ipt].sigs[1]=hm;
+		PTC[ipt].sigs[0]=sigp[i];
+		PTC[ipt].sigs[1]=sigm[i];
+		//PTC[ipt].nH2O[0]=nwp[i]; PTC[ipt].nH2O[1]=nwm[i];
+		PTC[ipt].sigs[0]=NaMt.hz.eval(nwp[i]);
+		PTC[ipt].sigs[1]=NaMt.hz.eval(nwm[i]);
 	}
-	//free(sigp);
-	//free(sigm);
+	free(sigp);
+	free(sigm);
 	free(nwp);
 	free(nwm);
 };

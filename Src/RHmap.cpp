@@ -80,6 +80,7 @@ int R2H::load(char fname[128]){
 
 	//printf("rH_lim=%lf %lf\n",rH_min,rH_max);
 	//printf("hz_lim=%lf %lf\n",hmin,hmax);
+	return(ndat);
 };
 
 int main(){

@@ -70,7 +70,7 @@ class Crv{
 		void write(char fname[128]);
 		void saw_tooth(double *Xk, int NXk,double gmm);
 		void smooth(int nsmp);
-		void trend(int type,double amp_wv);
+		//void trend(int type,double amp_wv);
 		double eval(double xval);
 		void load(char fn[128]);
 		double y2x(double yval);
@@ -130,8 +130,8 @@ class CNTRL{	// DEM implementation controle parameters
 		void load(char *fname);// load data 
 		void print();		// print parameters	
 		double h0[2];		// subcell size (given)
-		double UE0;	// max hydration energy
-		double mu;
+		//double mu;
+		double RH_ex;	// R.H. of water resarvoir
 		int itime; // current time
 	private:
 };

@@ -4,12 +4,17 @@
 #include <math.h>
 #include <time.h>
 #include <random>
-#include <sys/stat.h>
 #include "dem.h"
 
 
 using namespace std;
 
+double Uhyd_sig(double U0, double sig){
+	double sig0=0.9;	//[nm]
+	double sigb=1.1;	//[nm] break point
+	double alph=log(2)/(sigb-sig0);
+	return( -U0*(1.0-exp(-alph*(sig-sig0))) );
+};
 double vfac(double TK, double T0, double T1, double t_now, double t_start, double t_end){
 	double Tset;
 	//if(t_now > t_end) return(1.0);
@@ -115,6 +120,93 @@ int move_water(
 	}
 	return(nswap);
 };
+int move_water2(
+		PRTCL *PTC, // particles
+		double dsig, // variation in water 
+		double rmax, // radius of interaction circle 
+		SUBCELL *sbcll,// Subcells 
+		REV rev,	// REV data
+		CNTRL prms,	// Basic DEM  Parameters
+		Crv uhyd
+){
+	int np=prms.np;
+	int ipt,iside,irnd,iswap;
+	int ipts[2],isds[2];
+	int nswap=0;
+	double dUE,dUE_try[2];
+	//double x1[2],x2[2];
+	double rx,ry,rr;
+	std::random_device rd;
+	std::mt19937 mt(rd());
+	//std::uniform_int_distribution<int>RndI(0,np*2-1);
+	std::uniform_int_distribution<int>RndI(0,np-1);
+
+	Vec2 xpi,xpj,rij,ni,nj;
+	double sig1,sig2,dUh;
+
+	double U0=prms.UE0;
+	for(ipt=0;ipt<np;ipt++){
+	//for(ipt=0;ipt<1;ipt++){
+		ipts[0]=ipt;
+
+		ipts[0]=RndI(mt);
+
+		//x1[0]=PTC[ipt].x[0];
+		//x1[1]=PTC[ipt].x[1];
+		xpi.set(PTC[ipt].x);
+	for(iside=0;iside<2;iside++){
+		isds[0]=iside;
+		ni.set(PTC[ipt].nx);		
+		if(iside==1) ni=ni.times(-1.0);
+		//if(iside==1) ni.times_me(-1.0);
+
+		//irnd=RndI(mt);
+		ipts[1]=RndI(mt);
+		//if(irnd != 2*ipts[0]+isds[0]){
+		if(ipts[0] != ipts[1]){
+			//ipts[1]=irnd/2; isds[1]=irnd%2;
+			//x2[0]=PTC[ipts[1]].x[0];
+			//x2[1]=PTC[ipts[1]].x[1];
+			xpj.set(PTC[ipts[1]].x);
+
+			rij=vdiff(xpj,xpi);
+			//vdiff(xpj,xpi,rij);
+
+			rr=rij.len();
+			//rx=x1[0]-x2[0];
+			//ry=x1[1]-x2[1];
+			//rr=sqrt(rx*rx+ry*ry);
+			if(rr>rmax) continue;
+			if(iprod(ni,rij) <0.0 ) continue;
+
+			nj.set(PTC[ipts[1]].nx);
+			isds[1]=0;
+			//if(iprod(ni,nj)>=0.0) isds[1]=1;
+			if(iprod(rij,nj)>=0.0) isds[1]=1;
+
+			sig1=PTC[ipts[0]].sigs[isds[0]];
+			sig2=PTC[ipts[1]].sigs[isds[1]];
+			//dUh=(Uhyd_sig(U0,sig1+dsig)-Uhyd_sig(U0,sig1));
+			//dUh+=(Uhyd_sig(U0,sig2-dsig)-Uhyd_sig(U0,sig2));
+			dUh=U0*(uhyd.eval(sig1+dsig)-uhyd.eval(sig1));
+			dUh+=U0*(uhyd.eval(sig2-dsig)-uhyd.eval(sig2));
+
+			dUE=VarUE(rev,sbcll,PTC,prms.iprd,prms.sig,prms.Eps,ipts,isds,dsig,dUE_try); //*2.*prms.Eps0;
+			iswap=0;
+			if(dUE < 0.0){
+			       	iswap=wswap(PTC,ipts,isds,dsig);
+				if(iswap==1){
+					PTC[ipts[0]].UE[isds[0]]+=dUE_try[0];
+					PTC[ipts[1]].UE[isds[1]]+=dUE_try[1];
+				}
+			}
+			nswap+=iswap;
+		}
+	}
+	}
+	return(nswap);
+};
+//int add_water(
 double add_water(
 		PRTCL *PTC, // particles
 		double dsig, // variation in water 
@@ -122,7 +214,7 @@ double add_water(
 		SUBCELL *sbcll,// Subcells 
 		REV rev,	// REV data
 		CNTRL prms,	// Basic DEM  Parameters
-		CLAY NaMt
+		Crv uhyd
 ){
 	int np=prms.np;
 	int ipt,iside,isgn;
@@ -132,72 +224,52 @@ double add_water(
 	//std::mt19937 mt(rd());
 	static std::mt19937 mt(2);
 	static std::mt19937 mtr(3);
+	//static std::uniform_int_distribution<int>RndI(0,np2);
 	static std::uniform_int_distribution<>RndI(0,np*2-1);
 	static std::uniform_real_distribution<>RndR(0,1);
 
 	int ip,irnd;
 	int nmc=np*2*0.1;
 	double dUh;
-	double sig_now,sig_try;
-	double nw_now,nw_try;
-	double dnw=0.15;	//n(H2O fluctuation
+	double sig_now;
+	double mu,dG;
+	//double mu=prms.mu;	This Does not work (not known why ?? 2021/01/20)
+	double sig0=0.9,sigb=1.1;
+	mu=prms.mu*log(2.)/(sigb-sig0)*prms.UE0;
 
-	double kb=1.381e-23; //[J/K] Boltzmann constant
-	double Na=6.022e+23; // Abogadro Number
-	double Temp=300.0;	// Temperature [K]
-	double mu_ex=Na*kb*Temp*log(prms.RH_ex);// [J/mol] 
-	double mu_sat=-44.5*1.e03;	// [J/mol]
-	//printf("T=%le [K], RH=%lf\n",Temp,RH);
-	//printf("mu_var=%le, mu_sat=%le[kJ/mol]\n",mu_ex*1.e-03,mu_sat*1.e-03);
-	mu_ex=mu_ex/Na/prms.Eps0;
-	mu_sat=mu_sat/Na/prms.Eps0;
-	//printf("mu_var=%le, mu_sat=%le(/Eps0)\n",mu_ex,mu_sat);
-	//printf("Eps0=%le[J](LJ-potential well depth)\n",prms.Eps0);
-	
-
-	double dG;
 	static int Nadd=0;
 
 	double Gn;
 	double Utot,prob;
-
-	double Ts=1.e-00, Te=1.e-04;	// artificial temperature or simulated annealing
+	double Ts=1.e-00, Te=1.e-04;
 	double alph=-log(Te/Ts)/prms.Nt,Tunit=1.0;
 	double kbT,rnd; 
-
-	kbT=kb*Temp/prms.Eps0*exp(-alph*prms.itime)*Ts*Tunit;
-	//printf("kbT=%lf\n",kb*Temp/prms.Eps0);
-
+	kbT=prms.UE0*exp(-alph*prms.itime)*Ts*Tunit;
 	Gn=0.0; nadd=0;
 	for(ipt=0;ipt<nmc;ipt++){
 		irnd=RndI(mt);	
-		ip=irnd/2;	// particle number
+		ip=irnd/2; // particle number
 		iside=ipt%2;	// side (head=0,tail=1)
 		isgn=1;
 		if(irnd%2==1) isgn=-1;
-
-		nw_now=PTC[ip].nH2O[iside];
-		nw_try=nw_now+dnw*isgn;
-
+		dUE=VarUE_mu(rev,sbcll,PTC,prms.iprd,prms.sig,prms.Eps,ip,iside,dsig*isgn); //*2.*prms.Eps0;
 		sig_now=PTC[ip].sigs[iside];
-		sig_try=NaMt.hz.eval(nw_try);
+		//dUh=Uhyd_sig(prms.UE0,sig_now+dsig*isgn)-Uhyd_sig(prms.UE0,sig_now);
+		dUh=(uhyd.eval(sig_now+dsig*isgn)-uhyd.eval(sig_now))*prms.UE0;
+		dG=mu*dsig*isgn;
 
-		dsig=sig_try-sig_now;	// variation
-		dUE=0.5*VarUE_mu(rev,sbcll,PTC,prms.iprd,prms.sig,prms.Eps,ip,iside,dsig); //*2.*prms.Eps0;
-		dUh=NaMt.mu_var.eval(nw_now)*dnw*isgn;
-		dG=-mu_ex*dnw*isgn;
-
-		Utot=dUE+dUh+dG;	
+		Utot=dUE+dUh+dG;
 		prob=exp(-Utot/kbT);
-		rnd=RndR(mtr);
-		//printf("dUE=%le, dUh=%le, dG=%le, sum=%le\n",dUE,dUh,dG,Utot);
 		//printf("prob=%lf, rnd=%lf,kbT=%lf\n",prob,rnd,kbT);
+		rnd=RndR(mtr);
 		if(rnd<prob){
 		//if(dUE+dUh+dG < 0.0){
-			if(nw_try>=0.0 && nw_try<=NaMt.nw_max){
-				PTC[ip].nH2O[iside]=nw_try;
-				PTC[ip].sigs[iside]=sig_try;
+			//PTC[ip].sigs[iside]+=(dsig*isgn);
+			sig=PTC[ip].sigs[iside]+dsig*isgn;
+			if(sig>=0.9){
 				PTC[ip].UE[iside]+=dUE;
+				//printf("dUE,dUh=%le %le(U0=%le)\n",dUE,dUh,prms.UE0);
+				PTC[ip].sigs[iside]=sig;
 				if(isgn ==1) nadd++;
 				if(isgn ==-1) nadd--;
 				Gn+=dG;
@@ -205,10 +277,10 @@ double add_water(
 		}
 	}
 	Nadd+=nadd;
-	printf("   [dN=%d, DN=%d]\n",nadd,Nadd);
+	printf(" [dN=%d, DN=%d]\n",nadd,Nadd);
 //	return(nadd);
 	//printf("Utot=%lf, kbT=%lf, prob=%le, rnd=%lf\n",Utot,kbT,prob,rnd);
-	return(Gn);	// return -mu_ex*dn
+	return(Gn);
 };
 
 int main(){
@@ -216,46 +288,65 @@ int main(){
 	std::random_device rd;
 	std::mt19937 mt(rd());
 	//std::uniform_real_distribution<double> MT(0,1.0);
-	std::uniform_int_distribution<int> RndB(0,1);	// binary distribution
+	std::uniform_int_distribution<int> RndB(0,1);
 
 	int irnd,iswap;
 	double PI=4.0*atan(1.0);
 	// INPUT DATA FILES
 	char fninp[128]="dem.inp";	// General DEM parameters
 	char fnptc[128]="ptc.dat";	// Particle Data
-	char fnsht[128]="sheet.dat";	// Clay Sheet Data
+	char fnsht[128]="sheet.dat";// Clay Sheet Data
 	char fnump[128]="ptc_nums.dat"; // particle number/sheet 
-	char fncly[128]="Uhyd.out"; 	// XRD & MD swelling curve 
 	char fname[128],cbff[128];
 
 	// OUTPUT DATA FILES
 	char fnerg[128]="energy.out"; //(out)
 	char fnstr[128]="stress.out"; //(out)
 	char fnptcl[128]="ptcl.out";  //(out)
+//	------------- Hydration Energy   --------------
+	Crv uhyd;
+	uhyd.setup(201);
+	double sig00=0.9;	//[nm]
+	double dsig=0.3;	//[nm]
+	int n_H20_max=10;
+	double sig10=sig00+dsig*n_H20_max;
+	uhyd.set_xlim(sig00,sig10);
+	int NXk=n_H20_max+2;
+	double *Xk=(double *)malloc(sizeof(double)*NXk);
+	Xk[0]=sig00;
+	Xk[NXk-1]=sig10+dsig;
+	//for(int i=1;i<NXk-1;i++) Xk[i]=dsig*i;
+	for(int i=1;i<NXk-1;i++) Xk[i]=Xk[i-1]+dsig;
+	double beta=0.6;	// decay rate
+	uhyd.set_stair(Xk,NXk);
+	uhyd.saw_tooth(Xk,NXk,beta);
+	uhyd.smooth(5);
+	uhyd.smooth(5);
+	uhyd.smooth(5);
+	uhyd.trend(1,0.22);
+	char fntmp[128]="uhyd_smec.dat";
+	uhyd.write(fntmp);
 
 //	------------- READ DEM PARAMETERS -------------
 	CNTRL prms;
-	prms.load(fninp);	// load parameters from "dem.inp"
-
-	CLAY NaMt;
-	NaMt.load(fncly);	// swelling law
-	double energy_unit=prms.Eps0;
-	NaMt.change_unit(energy_unit);
-
+	prms.load(fninp);
 	join_chars(prms.Dir,fnerg);
 	join_chars(prms.Dir,fnstr);
 	join_chars(prms.Dir,fnptcl);
 	join_chars(prms.Dir,fnump);
-	mkdir(prms.Dir,0777);	// Make Output Directory
 
 	puts(fnerg);
 	puts(fnstr);
 	puts(fnptcl);
 	puts(fnump);
-		// Opne Files
+
 	FILE *fp,*ftmp;
 	FILE *ferg=fopen(fnerg,"w");
-	if(ferg==NULL) show_msg(fnerg);
+	if(ferg==NULL){
+		printf("File %s cannot open !!\n",fnerg);
+		printf(" ---> abort process\n");
+		exit(-1);
+	}
 	FILE *fstr=fopen(fnstr,"w");
 	FILE *fsig=fopen("sig_sum.out","w");
 
@@ -263,11 +354,11 @@ int main(){
 	double m0;
 	double kb=1.381e-23; //[J/K] Boltzmann constant
 	double Na=6.022e+23; // Abogadro Number
-	double TK;	// Temperature [K]
-	double KE,UE;	// Kinetic & Potential energy
-	double Uhyd;	// hydration energy value
+	double TK;	// temperature [K]
+	double KE,UE;	// Kinetic & potential energy
+	double Uhyd;	// hydration energy
 
-	int nsmp=300,ismp=0;	// sampling conditions
+	int nsmp=300,ismp=0;
 	double Sab_smp[2][2];
 	double dsxx,dsxy,dsyy;
 	double dsxx0,dsxy0,dsyy0;
@@ -275,19 +366,20 @@ int main(){
 	double Tfac=1.0,Vfac;
 
 	int nst;	// number of clay molecules
+	//int i,j,k,np,imb,ipt,ir0,ir1,i0,i1;
 	int i,j,k,np,imb,ir0,ir1,i0,i1;
 	double Xmin,Xmax,Ymin,Ymax,Wmax[2],tt,Mtot,rho_d,pr;
-	double dt;	// time increment
-	int Nt;		// number of time steps	
+	double dt; // time increment
+	int Nt;	  // number of time steps	
 	int Nout,ninc,isum; // number of output times 
 	double x1,x2,v1,v2,mj,r1,r2;
 	double sig;
 	int i0_T_start;
 
-	SHEET *st;	// sheet class array
-	PRTCL *PTC,pt;	// particle class array
-	REV rev;	// Unit cell class
-	WALL wll;	// Rigid wall particle class
+	SHEET *st;
+	PRTCL *PTC,pt;
+	REV rev;
+	WALL wll;
 
 	FILE *fpl_out=fopen(fnptcl,"w");
 
@@ -298,9 +390,12 @@ int main(){
 	if(fp == NULL) show_msg(fnptc);
 	fgets(cbff,128,fp);
 	fscanf(fp,"%d\n",&np);
+	printf("np=%d\n",np);
 
-	// uniform distribution: irnd=RndI(mt); 
-	std::uniform_int_distribution<int>RndI(0,np*2-1); 
+	std::uniform_int_distribution<int>RndI(0,np*2-1);
+	//irnd=RndI(mt);
+	//printf("%d %d %d %d\n",irnd/2,irnd%2,irnd,np);
+
 	PTC= (PRTCL *)malloc(sizeof(PRTCL)*np);
 	for(i=0;i<np;i++) PTC[i].init();
 
@@ -319,17 +414,14 @@ int main(){
 		PTC[i].setX(x1,x2);
 		PTC[i].mobile=imb;
 		//PTC[i].m=mj*(sig*sig/1.5/1.5);	
-		PTC[i].m=mj;	// mass
-		PTC[i].irev[0]=i0; // cell No. (lateral)
-		PTC[i].irev[1]=i1; // cell No. (vertical)
-		if( sig > 10.0) npl++; // count Large particles
-
-		PTC[i].sig=1.0;		// ??? (2023/01/20)
-		PTC[i].sigs[0]=sig;	// characteristic distance (head)
-		PTC[i].sigs[1]=sig;	// characteristic distance (tail)
-
-		PTC[i].nH2O[0]=NaMt.hz.y2x(sig); // molar number (head)
-		PTC[i].nH2O[1]=PTC[i].nH2O[0]; 	 // molar number (tail)
+		PTC[i].m=mj;
+		PTC[i].irev[0]=i0;
+		PTC[i].irev[1]=i1;
+		if( sig > 10.0) npl++;
+		//PTC[i].sig=sig;
+		PTC[i].sig=1.0;
+		PTC[i].sigs[0]=sig;
+		PTC[i].sigs[1]=sig;
 	}
 
 	int *indx=(int *)malloc(sizeof(int)*npl);
@@ -337,19 +429,19 @@ int main(){
 	for(i=0;i<np;i++){
 		if(PTC[i].sig >10.0) indx[i]=jsum++;
 	}
+	printf("npl=%d\n",npl);
 	for(i=0;i<npl;i++) printf("indx=%d\n",indx[i]);
-
 	Wmax[0]=Xmax-Xmin;
 	Wmax[1]=Ymax-Ymin;
 	fclose(fp);
 
 //	------------------ DEM PARAMETERS -------------
+	//prms.load(fninp);
 	ninc=prms.Nt/prms.Nout;
 	prms.np=np;
 	if(ninc ==0) ninc=1;
 	i0_T_start=int(prms.time_T_start/prms.dt);
 	if(i0_T_start < 1) i0_T_start=1;
-
 //	------------  READ AGGREGATE DATA -------------
 	puts(fnump);
 	ftmp=fopen(fnump,"w");
@@ -381,7 +473,7 @@ int main(){
 
 	Set_Vel(PTC,st,prms);
 
-	if(prms.rstat==1) restart(&prms,np,PTC,nst,st);	// RESTART instruction
+	if(prms.rstat==1) restart(&prms,np,PTC,nst,st);
 
 	rev.setup(prms,wll);	// setup unit cell
 	rev.update(0,prms.dt,wll);
@@ -391,15 +483,15 @@ int main(){
 
 //	----------------------------------------------
 	
-	Mtot=np*prms.m0;	// total mass
+	Mtot=np*prms.m0;
 	m0=prms.m0*1.e24;
 
-	rho_d=Mtot/rev.Vol*1.e27*1.e-03;// dry density
-	pr=1.0-np*1.0*1.0/rev.Vol;	// porosity
+	rho_d=Mtot/rev.Vol*1.e27*1.e-03;
+	pr=1.0-np*1.0*1.0/rev.Vol;
 
 	save_ptc_data(0,0.0,rho_d,pr,rev,np,PTC,nst,st,prms.Dir);
 	printf("\n");
-	fprintf(fpl_out,"%d\n",npl); // --> ptcl.out (add Large particle info.)
+	fprintf(fpl_out,"%d\n",npl);
 	for(j=0;j<npl;j++) fprintf(fpl_out,"%lf\n",PTC[indx[j]].sig);
 	for(j=0;j<npl;j++) fprintf(fpl_out,"%lf %lf\n",PTC[indx[j]].x[0],PTC[indx[j]].x[1]);
 
@@ -422,8 +514,9 @@ int main(){
 
 	SUBCELL *sbcll;
 	double Un=0.0,UnKJ;
-	double sig_tot,nH2O_tot,nwp,nwm;
+	double sig_tot;
 	for(i=1;i<=prms.Nt;i++){	// Time Step (START) 
+	//for(i=1;i<=100;i++){	// Time Step (START) 
 		//for(ist=0;ist<nst;ist++) st[ist].xy2crv(rev,PTC);
 		prms.itime=i;	
 		//for(j=0;j<np;j++) PTC[j].scale(i,prms.dt,rev);
@@ -440,8 +533,8 @@ int main(){
 		for(j=0;j<rev.nsub;j++) sbcll[j].setup(rev,prms.sig); 
 		regist_ptc(rev,PTC,sbcll,np);
 
-		rho_d=Mtot/rev.Vol*1.e27*1.e-03; // Dry Density
-		pr=1.0-np*1.0*1.0/rev.Vol;	 // Porosity
+		rho_d=Mtot/rev.Vol*1.e27*1.e-03;
+		pr=1.0-np*1.0*1.0/rev.Vol;
 
 		for(j=0;j<np;j++){	// Clear Force Vectors
 			PTC[j].F[0]=0.0; 
@@ -452,7 +545,8 @@ int main(){
 		Sab[1][0]=0.0;
 		Sab[1][1]=0.0;
 		UE=0.0;
-		UE=VDF(rev,sbcll,PTC,prms.iprd,prms.sig,prms.Eps,dS1); // Potential Energy
+		UE=VDF(rev,sbcll,PTC,prms.iprd,prms.sig,prms.Eps,dS1);
+		if(i==1) prms.UE0=fabs(UE)/prms.np*5.0;
 		UE*=(2.*prms.Eps0);
 		//UE+=(VDF_L(rev,PTC,prms.iprd,prms.Eps,dS1,np,npl,indx)*2.*prms.Eps0);
 		Sab[0][0]+=dS1[0][0]; 
@@ -466,11 +560,14 @@ int main(){
 			Sab[1][1]+=(dS1[1][1]+dS2[1][1]);
 		} // END_SHEET_j
 
+
+
 		Sab[0][0]*=0.5;
 		Sab[1][0]*=0.5;
 		Sab[1][1]*=0.5;
 		for(j=0;j<np;j++){
 			pt=PTC[j];
+
 			Sab[0][0]+=(pt.m*pt.v[0]*pt.v[0]);
 			Sab[1][0]+=(pt.m*pt.v[1]*pt.v[0]);
 			Sab[1][1]+=(pt.m*pt.v[1]*pt.v[1]);
@@ -490,82 +587,71 @@ int main(){
 		if(i%ninc ==0){ 
 			isum++;
 			tt=i*prms.dt;
-			save_ptc_data(isum,tt,rho_d,pr,rev,np,PTC,nst,st,prms.Dir); // regular particles
-			printf("( %le[g/cm3] )\n",rho_d); // print dry density value
+			save_ptc_data(isum,tt,rho_d,pr,rev,np,PTC,nst,st,prms.Dir);
+			printf("( %le[g/cm3] )\n",rho_d);
 
-			for(j=0;j<npl;j++){	// Large particles
+			for(j=0;j<npl;j++){
 				fprintf(fpl_out,"%lf %lf\n",PTC[indx[j]].x[0],PTC[indx[j]].x[1]);
 			}
 		}
 
-		KE=0.0;	// total kinetic energy
-		Uhyd=0.0; // total hydration energy
-		sig_tot=0.0; // sum of charercteristic distance
-		nH2O_tot=0.0;
+		KE=0.0;
+		Uhyd=0.0;
+		sig_tot=0.0;
 		for(j=0;j<np;j++){
 			KE+=PTC[j].KE(prms.m0);
+			//Uhyd+=Uhyd_sig(prms.UE0,PTC[j].sigs[0]);
+			//Uhyd+=Uhyd_sig(prms.UE0,PTC[j].sigs[1]);
+			Uhyd+=uhyd.eval(PTC[j].sigs[0])*prms.UE0;
+			Uhyd+=uhyd.eval(PTC[j].sigs[1])*prms.UE0;
 			sig_tot+=PTC[j].sigs[0];
 			sig_tot+=PTC[j].sigs[1];
-			nwp=PTC[j].nH2O[0];
-			nwm=PTC[j].nH2O[1];
-			nH2O_tot+=(nwp+nwm);
-			Uhyd+=NaMt.G_var.eval(nwp);	// [prms.Eps0]
-			Uhyd+=NaMt.G_var.eval(nwm);	// [prms.Eps0]
-			//printf("dG_var%le, %le\n",NaMt.G_var.eval(nwp),NaMt.G_var.eval(nwm));
 		}
-		TK=KE/(1.5*prms.np*kb);	// Temperature
+		TK=KE/(1.5*prms.np*kb);
 		//if(i%100==0) printf("UE=%le, UH=%le, (UH/UE=%le)\n",UE,Uhyd,Uhyd/UE);
 
 		rev.smooth(Sab,TK,UE);
 		KE=KE/np*Na*1.e-03;
-		UE=UE/np*Na*1.e-03; // [kJ/mol/particle]
-		Uhyd=Uhyd*prms.Eps0; //[J]
-		Uhyd=Uhyd/np*Na*1.e-03;	// [J] --> [kJ/mol/particle]
+		UE=UE/np*Na*1.e-03; // [kJ/mol]
+		Uhyd=Uhyd*(2.*prms.Eps0);
+		Uhyd=Uhyd/np*Na*1.e-03;
 
-		UnKJ=Un*prms.Eps0; //[J]
-		UnKJ=UnKJ/np*Na*1.e-03; // [J] --> [kJ/mol/particle]
+		UnKJ=Un*2.*prms.Eps0;
+		UnKJ=UnKJ/np*Na*1.e-03;
+
 
 		fprintf(ferg,"%le %le %le %le %le %le %le %le %le\n",i*prms.dt,KE,UE,rev.Wd[0],rev.Wd[1],TK,rev.Tb,Uhyd,UnKJ);
 		fprintf(fstr,"%le %le %le %le %le ",i*prms.dt,rev.Wd[0],rev.Wd[1],rev.Wd[2],rev.Wd[3]);
 		fprintf(fstr,"%le %le %le ",Sab[0][0]*m0,Sab[1][0]*m0,Sab[1][1]*m0);
+
 		fprintf(fsig,"%le %le %le %le\n",i*prms.dt,Uhyd,UnKJ,(sig_tot-0.9*np*2)*0.5);
 
 		int nswap,il,ir,npt,nadd;
-		double sigb,nH2Ob;
+		double sigb;
 		nadd=0;
 		for(ist=0;ist<nst;ist++) st[ist].xy2crv(rev,PTC);
 		//if(i%2==1){
 		if(prms.mvw>0){
 			//nswap=move_water2(PTC,0.03,3.5,sbcll,rev, prms,uhyd);
-			//if(prms.mvw==2 && i%10==1){
-			if(prms.mvw==2 && i%5==1){
-				//Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,uhyd,NaMt);
-				Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,NaMt);
+			if(prms.mvw==2 && i%10==1){
+				//nadd=add_water(PTC,0.03,3.5,sbcll,rev, prms);
+				//Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms);
+				Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,uhyd);
 				//printf("Un=%le\n",Un);
-				//printf(" s_tot=%lf ",(sig_tot-0.9*np*2)*0.5);
+				printf(" s_tot=%lf ",(sig_tot-0.9*np*2)*0.5);
 			};
 
-			for(ist=0;ist<nst;ist++) st[ist].wsmooth(rev,PTC,NaMt);
+			for(ist=0;ist<nst;ist++) st[ist].wsmooth(rev,PTC);
 			for(j=0;j<nst;j++){ // START_SHEET_j
-				il=st[j].list[0];	// end particle 1
-
-				npt=st[j].Np;
-				ir=st[j].list[npt-1];	// end particle 2
-
-				nH2Ob=0.5*(PTC[il].nH2O[0]+PTC[il].nH2O[1]);
-				PTC[il].nH2O[0]=nH2Ob;
-				PTC[il].nH2O[1]=nH2Ob;
-				sigb=NaMt.hz.eval(nH2Ob);
+				il=st[j].list[0];
+				sigb=0.5*(PTC[il].sigs[0]+PTC[il].sigs[1]);
 				PTC[il].sigs[0]=sigb;
 				PTC[il].sigs[1]=sigb;
-
-				nH2Ob=0.5*(PTC[ir].nH2O[0]+PTC[ir].nH2O[1]);
-				PTC[ir].nH2O[0]=nH2Ob;
-				PTC[ir].nH2O[1]=nH2Ob;
-				sigb=NaMt.hz.eval(nH2Ob);
+				npt=st[j].Np;
+				ir=st[j].list[npt-1];
+				sigb=0.5*(PTC[ir].sigs[0]+PTC[ir].sigs[1]);
 				PTC[ir].sigs[0]=sigb;
 				PTC[ir].sigs[1]=sigb;
-
 			}
 		}
 		if((ismp%nsmp)==0){
@@ -584,6 +670,7 @@ int main(){
 				if(fabs(dsyy/(dsyy0+1.e-07)) >= 1.1) rev.kyy*=0.9; 
 			}
 
+		
 			Sab_smp[0][0]=rev.sxxb*m0;
 			Sab_smp[0][1]=rev.sxyb*m0;
 			Sab_smp[1][1]=rev.syyb*m0;
