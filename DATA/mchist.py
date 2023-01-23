@@ -135,14 +135,13 @@ if __name__=="__main__":
     nums=fp.readlines();
     nums=list(map(int,nums));
 
-    num=0
+    num=4
     args=sys.argv;
     narg=len(args)
     if narg >1:
         num=int(args[1])
 
-    #nums=range(250)
-    nums=range(125)
+    nums=range(num)
     Hz=[]
     for num in nums:
         fname="x"+str(num)+".dat"
@@ -152,7 +151,9 @@ if __name__=="__main__":
         Hz.append(hz)
     Hz=np.array(Hz)
     print(np.shape(Hz))
-    im=ax.imshow(Hz,aspect="auto",cmap="jet",interpolation="none",origin="lower",vmin=12,vmax=16)
+    vmin=11
+    vmax=16
+    im=ax.imshow(Hz,aspect="auto",cmap="jet",interpolation="none",origin="lower",vmin=vmin,vmax=vmax)
     plt.colorbar(im)
 
 

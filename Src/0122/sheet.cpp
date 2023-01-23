@@ -301,14 +301,16 @@ void SHEET::xy2crv(REV rev, PRTCL *PTC){
 */
 };
 
-void SHEET::wsmooth(REV rev, PRTCL *PTC, CLAY NaMt, int nsmp){
+void SHEET::wsmooth(REV rev, PRTCL *PTC, CLAY NaMt){
 	int i,ipt,jpt;
 	int j,j1,j2,jd;
-	//int nsmp=3;// 2023/01/22(test)
-	//int nsmp=1;// 2023/01/22(test)
+	//int nsmp=3;
+	int nsmp=1;// 2023/01/22(test)
 	int nd=nsmp*2+1;
 	int nsum;
 	double dat;
+	//double *sigp=(double *)malloc(sizeof(double)*Np);
+	//double *sigm=(double *)malloc(sizeof(double)*Np);
 	double *nwp=(double *)malloc(sizeof(double)*Np);
 	double *nwm=(double *)malloc(sizeof(double)*Np);
 
@@ -317,6 +319,7 @@ void SHEET::wsmooth(REV rev, PRTCL *PTC, CLAY NaMt, int nsmp){
 	for(i=0; i<Np; i++){
 		j1=i-nsmp;
 		j2=i+nsmp;
+		//sigp[i]=0.0; sigm[i]=0.0;
 		nwp[i]=0.0; nwm[i]=0.0;
 		count=0;
 		for(j=j1; j<=j2; j++){ 
@@ -324,15 +327,21 @@ void SHEET::wsmooth(REV rev, PRTCL *PTC, CLAY NaMt, int nsmp){
 			if(j<0) continue;
 			if(j>=Np) continue;
 			jpt=list[jd];
+			//sigp[i]+=PTC[jpt].sigs[0];
+			//sigm[i]+=PTC[jpt].sigs[1];
 			nwp[i]+=PTC[jpt].nH2O[0];
 			nwm[i]+=PTC[jpt].nH2O[1];
 			count++;
 		}
+		//sigp[i]/=count;
+		//sigm[i]/=count;
 		nwp[i]/=count;
 		nwm[i]/=count;
 	}
 	for(i=0;i<Np;i++){
 		ipt=list[i];
+		//PTC[ipt].sigs[0]=sigp[i];
+		//PTC[ipt].sigs[1]=sigm[i];
 
 		PTC[ipt].nH2O[0]=nwp[i];
 		PTC[ipt].nH2O[1]=nwm[i];
@@ -342,6 +351,8 @@ void SHEET::wsmooth(REV rev, PRTCL *PTC, CLAY NaMt, int nsmp){
 		PTC[ipt].sigs[0]=hp;
 		PTC[ipt].sigs[1]=hm;
 	}
+	//free(sigp);
+	//free(sigm);
 	free(nwp);
 	free(nwm);
 };

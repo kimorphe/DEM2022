@@ -133,7 +133,9 @@ class CNTRL{	// DEM implementation controle parameters
 		//double mu;
 		double RH_ex;	// R.H. of water resarvoir
 		int itime; // current time
-		int Nadd; 
+		int Nadd;  // accumlative signed MC count 
+		int MC_intvl; // MC interval (perform MC every mc_intvl time step)
+		int nw_smth; // number samples for nH2O smoothing  
 	private:
 };
 class WALL{	// WALL configuration and movement 
@@ -260,7 +262,7 @@ class SHEET{
 		void set_vel(PRTCL *PTC, double vx, double vy);		// set velocity vector 
 		Curve2D crv;
 		void xy2crv(REV rev,PRTCL *PTC);
-		void wsmooth(REV rev, PRTCL *PTC, CLAY NaMt);
+		void wsmooth(REV rev, PRTCL *PTC, CLAY NaMt,int nsmp);
 	private:
 }; 
 
@@ -397,7 +399,8 @@ void restart(
 	int np,	// number of particles
 	PRTCL *PTC,
 	int nst,
-	SHEET *st
+	SHEET *st,
+	CLAY NaMt
 );
 double Uhyd_sig(double U0, double sig);
 

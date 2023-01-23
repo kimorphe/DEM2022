@@ -33,8 +33,8 @@ class PTCS:
 
 		fp.readline();
 
-		x=[]; sigp=[];
-		y=[]; sigm=[];
+		x=[]; sigp=[]; nwp=[];
+		y=[]; sigm=[]; nwm=[];
 		irev=[];
 		jrev=[];
 		#for row in fp:
@@ -47,6 +47,8 @@ class PTCS:
 			jrev.append(int(dat[1]));	
 			sigp.append(float(dat[6]));
 			sigm.append(float(dat[7]));
+			nwp.append(float(dat[8]));
+			nwm.append(float(dat[9]));
 		
 
 		self.x=x;
@@ -55,21 +57,19 @@ class PTCS:
 		self.jrev=jrev;
 		self.sigp=np.array(sigp)*10 # [A]
 		self.sigm=np.array(sigm)*10 # [A]
+		self.nwp=np.array(nwp)
+		self.nwm=np.array(nwm)
 		self.Np=Np
 		fp.close();
-	def hist(self,ax,bins=40):
-            sh=np.concatenate([self.sigp,self.sigm])
-            #sh-=0.9;
-            #sh*=0.5;
-            ax.hist(sh,bins=bins,color="m")
+	def hist(self,ax,bins=30):
+            nw=np.concatenate([self.nwp,self.nwm])
+            ax.hist(nw,bins=bins,color="g")
             ax.grid(True)
 
 	def plot_w(self,ax):
 		lw=0.5
-		#ax.plot( (self.sigp-0.9)*0.5,"-k",linewidth=lw)
-		#ax.plot( (self.sigm-0.9)*0.5,"-k",linewidth=lw)
-		ax.plot( self.sigp,"-k",linewidth=lw)
-		ax.plot( self.sigm,"-k",linewidth=lw)
+		ax.plot( self.nwp,"-k",linewidth=lw)
+		ax.plot( self.nwm,"-k",linewidth=lw)
 		ax.grid(True)
 	def plot_w2(self,ax,nps):
 		clrs=["r","b","g","c","y","m","k"];
@@ -78,15 +78,13 @@ class PTCS:
 		st=0;
 		for n in nps:
                     n2=n1+n;
-                    sp=np.array(self.sigp[n1:n2])
-                    sm=np.array(self.sigm[n1:n2])
-                    #sp-=0.9; sm-=0.9
-                    #sp*=0.5; sm*=0.5;
+                    nwp_seg=np.array(self.nwp[n1:n2])
+                    nwm_seg=np.array(self.nwm[n1:n2])
                     num=np.arange(n1,n2,1)
                     n1=n2
                     cl=clrs[st%nclrs]
-                    ax.plot(num,sp,cl,linewidth=1.0)
-                    ax.plot(num,sm,"--"+cl,linewidth=1.0)
+                    ax.plot(num,nwp_seg,cl,linewidth=1.0)
+                    ax.plot(num,nwm_seg,"--"+cl,linewidth=1.0)
                     st+=1
 		ax.grid(True)
 	def plot(self,ax,nps,Movie=False):
@@ -128,7 +126,7 @@ class PTCS:
 if __name__=="__main__":
 
     plt.rcParams["font.size"]=12
-    fig=plt.figure(figsize=[11,3])
+    fig=plt.figure(figsize=[10,3])
     ax=fig.add_subplot(111)
 
     fp=open("ptc_nums.dat");
@@ -147,19 +145,18 @@ if __name__=="__main__":
     ptc.plot_w(ax)
     ptc.plot_w2(ax,nums)
     ax.set_title(fname)
-
-    print("sum(sig)=",np.sum(ptc.sigp)+np.sum(ptc.sigm)-ptc.Np*0.9*2)
-    ax.set_xlim([0,ptc.Np])
-    ax.set_ylim([9,16])
     ax.set_xlabel("particle No.")
-    ax.set_ylabel("basal spacing [$\AA$]")
+    ax.set_ylabel("n(H2O)")
+
+    ax.set_xlim([0,ptc.Np])
+    ax.set_ylim([0,4])
     #ax.tick_params(labelsize=14)
 
     fig2=plt.figure(figsize=[6,4])
     ax2=fig2.add_subplot(111)
-    ax2.set_title(fname)
     ptc.hist(ax2,bins=40)
-    ax2.set_xlim([11,16])
-    ax2.set_xlabel("basal spacing [$\AA$]")
+    ax2.set_title(fname)
     ax2.set_ylabel("count")
+    ax2.set_xlabel("n(H2O)")
+    ax2.set_xlim([0,4])
     plt.show()

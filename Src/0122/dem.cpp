@@ -122,8 +122,7 @@ double add_water(
 		SUBCELL *sbcll,// Subcells 
 		REV rev,	// REV data
 		CNTRL prms,	// Basic DEM  Parameters
-		CLAY NaMt,
-		int *counter
+		CLAY NaMt
 ){
 	int np=prms.np;
 	int ipt,iside,isgn;
@@ -206,9 +205,9 @@ double add_water(
 		}
 	}
 	Nadd+=nadd;
-	//printf("   [dN=%d, DN=%d]\n",nadd,Nadd);
-	*counter=Nadd;
+	printf("   [dN=%d, DN=%d]\n",nadd,Nadd);
 //	return(nadd);
+	//printf("Utot=%lf, kbT=%lf, prob=%le, rnd=%lf\n",Utot,kbT,prob,rnd);
 	return(Gn);	// return -mu_ex*dn
 };
 
@@ -233,7 +232,6 @@ int main(){
 	char fnerg[128]="energy.out"; //(out)
 	char fnstr[128]="stress.out"; //(out)
 	char fnptcl[128]="ptcl.out";  //(out)
-	char fnMC[128]="mc_log.out";  //(out)
 
 //	------------- READ DEM PARAMETERS -------------
 	CNTRL prms;
@@ -248,21 +246,18 @@ int main(){
 	join_chars(prms.Dir,fnstr);
 	join_chars(prms.Dir,fnptcl);
 	join_chars(prms.Dir,fnump);
-	join_chars(prms.Dir,fnMC);
 	mkdir(prms.Dir,0777);	// Make Output Directory
 
 	puts(fnerg);
 	puts(fnstr);
 	puts(fnptcl);
 	puts(fnump);
-	puts(fnMC);
 		// Opne Files
 	FILE *fp,*ftmp;
 	FILE *ferg=fopen(fnerg,"w");
 	if(ferg==NULL) show_msg(fnerg);
 	FILE *fstr=fopen(fnstr,"w");
 	FILE *fsig=fopen("sig_sum.out","w");
-	FILE *fMClog=fopen(fnMC,"w");
 
 	double Sab[2][2],dS1[2][2],dS2[2][2];
 	double m0;
@@ -386,7 +381,7 @@ int main(){
 
 	Set_Vel(PTC,st,prms);
 
-	if(prms.rstat==1) restart(&prms,np,PTC,nst,st,NaMt);	// RESTART instruction
+	if(prms.rstat==1) restart(&prms,np,PTC,nst,st);	// RESTART instruction
 
 	rev.setup(prms,wll);	// setup unit cell
 	rev.update(0,prms.dt,wll);
@@ -428,7 +423,6 @@ int main(){
 	SUBCELL *sbcll;
 	double Un=0.0,UnKJ;
 	double sig_tot,nH2O_tot,nwp,nwm;
-	int counter=0;
 	for(i=1;i<=prms.Nt;i++){	// Time Step (START) 
 		//for(ist=0;ist<nst;ist++) st[ist].xy2crv(rev,PTC);
 		prms.itime=i;	
@@ -544,16 +538,14 @@ int main(){
 		if(prms.mvw>0){
 			//nswap=move_water2(PTC,0.03,3.5,sbcll,rev, prms,uhyd);
 			//if(prms.mvw==2 && i%10==1){
-			//if(prms.mvw==2 && i%5==1){
-			if(prms.mvw==2 && i%prms.MC_intvl==1){
+			if(prms.mvw==2 && i%5==1){
 				//Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,uhyd,NaMt);
-				Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,NaMt,&counter);
+				Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,NaMt);
 				//printf("Un=%le\n",Un);
 				//printf(" s_tot=%lf ",(sig_tot-0.9*np*2)*0.5);
-				fprintf(fMClog,"%le, %le, %d\n",i*prms.dt,rho_d,counter);
 			};
 
-			for(ist=0;ist<nst;ist++) st[ist].wsmooth(rev,PTC,NaMt,prms.nw_smth);
+			for(ist=0;ist<nst;ist++) st[ist].wsmooth(rev,PTC,NaMt);
 			for(j=0;j<nst;j++){ // START_SHEET_j
 				il=st[j].list[0];	// end particle 1
 
@@ -767,8 +759,8 @@ void save_ptc_data(
 	for(j=0;j<np;j++){	
 		//fprintf(fp,"%d %d %22.16le %22.16le %22.16le %22.16le\n",
 		//PTC[j].irev[0],PTC[j].irev[1],PTC[j].x[0], PTC[j].x[1],PTC[j].v[0],PTC[j].v[1]);
-		fprintf(fp,"%d %d %22.16le %22.16le %22.16le %22.16le %22.16le %22.16le %22.16le %22.16le\n",
-		PTC[j].irev[0],PTC[j].irev[1],PTC[j].x[0], PTC[j].x[1],PTC[j].v[0],PTC[j].v[1],PTC[j].sigs[0],PTC[j].sigs[1],PTC[j].nH2O[0],PTC[j].nH2O[1]);
+		fprintf(fp,"%d %d %22.16le %22.16le %22.16le %22.16le %22.16le %22.16le\n",
+		PTC[j].irev[0],PTC[j].irev[1],PTC[j].x[0], PTC[j].x[1],PTC[j].v[0],PTC[j].v[1],PTC[j].sigs[0],PTC[j].sigs[1]);
 	}
 	fprintf(fp,"#number of sheets\n");
 	fprintf(fp,"%d\n",nst);
@@ -785,8 +777,7 @@ void restart(
 	int np,	// number of particles
 	PRTCL *PTC,
 	int nst,
-	SHEET *st,
-	CLAY NaMt
+	SHEET *st
 ){
 
 	FILE *fp=fopen((*prms).fnrst,"r");
@@ -826,8 +817,6 @@ void restart(
 		PTC[i].irev[0]=i0; PTC[i].irev[1]=i1;
 		PTC[i].sigs[0]=sigp;
 		PTC[i].sigs[1]=sigm;
-		PTC[i].nH2O[0]=NaMt.hz.y2x(sigp); // molar number (head)
-		PTC[i].nH2O[0]=NaMt.hz.y2x(sigm); // molar number (head)
 	}
 
 	fgets(cbff,128,fp);

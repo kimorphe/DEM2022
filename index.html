@@ -361,9 +361,20 @@ CG系の粒子間相互作用エネルギーは，次のようなLenard-Jones(LJ
 	<li>乾燥密度とMCステップカウント(吸水+1, 排水-1の総計)をmc_log.outへ出力</li>
 	<li>MCステップの採用が応力と連動している(平均化点数5, sxx=10MPaの場合)</li>
 	<li>平均化点数3, sxx=10MPaで再度計算．水分の減少率は折れ線状．密度はいつからしたに凸?(18:07))</li>
-	<li>平均化なし(端点のみ), sxx=10MPaで計算</li>
+	<li>平均化なし(端点のみ平均化), sxx=10MPaで計算--> 水分分布が細かく変動しすぎる</li>
+	<li>MCの頻度を10,5,2ステップあたりに1回と、高い程、水分の排出が進む</li>
+	<li>Test2:MC/5step, 5点平均，Test3:MC/10step, 5サンプル平均, Test4: MC/2step, 5サンプル平均</li>
+	<li>Test5:Test4の結果からリスタート, 当初温度が跳ね上がる．最終的な結果はあまり変わらない(1-2層膨潤が分離)</li>
 	</ul>
 </li>
+<li>01/23(Mon.)<br>
+	<ul>
+		<li> nH2O[0,1]の出力を追加Output/x***.datへ</li>
+		<li> MC頻度の切り替え(MC_intvl), 水分分布の移動平均次数(nw_smth)を追加, dem.inp末尾に入力業の追加が必要</li>
+		<li> DATA/DEVフォルダにTest4と同じ条件で計算を行いdebugging</li>
+		<li> nH2Oの分布とヒストグラム表示<a href="DATA/nH2O.py">DATA/nH2O.py</a>を作成</li>
+		<li> 関連して<a href="DATA/water.py">water.py</a>にもマイナーな修正を施す</li>
+	</ul>
 </ul>
 <h2>References</h2>
 <ul>
