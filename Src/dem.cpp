@@ -550,7 +550,13 @@ int main(){
 				Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,NaMt,&counter);
 				//printf("Un=%le\n",Un);
 				//printf(" s_tot=%lf ",(sig_tot-0.9*np*2)*0.5);
-				fprintf(fMClog,"%le, %le, %d\n",i*prms.dt,rho_d,counter);
+				nH2O_tot=0.0;
+				for(j=0;j<np;j++){
+					nH2O_tot+=PTC[j].nH2O[0];
+					nH2O_tot+=PTC[j].nH2O[1];
+				}
+				nH2O_tot=0.5*nH2O_tot/np;
+				fprintf(fMClog,"%le, %le, %d, %le\n",i*prms.dt,rho_d,counter,nH2O_tot);
 			};
 
 			for(ist=0;ist<nst;ist++) st[ist].wsmooth(rev,PTC,NaMt,prms.nw_smth);

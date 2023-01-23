@@ -43,5 +43,6 @@
  24
 # Relative humidity
  0.5
-## chemical potential
-# 0.3
+## MC_intvl(MC period), nw_smth(order of nH2O smoothing)
+ 2, 2
+ 
