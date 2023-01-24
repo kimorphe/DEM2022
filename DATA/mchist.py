@@ -33,8 +33,8 @@ class PTCS:
 
 		fp.readline();
 
-		x=[]; sigp=[];
-		y=[]; sigm=[];
+		x=[]; sigp=[]; nwp=[];
+		y=[]; sigm=[]; nwm=[];
 		irev=[];
 		jrev=[];
 		#for row in fp:
@@ -47,6 +47,8 @@ class PTCS:
 			jrev.append(int(dat[1]));	
 			sigp.append(float(dat[6]));
 			sigm.append(float(dat[7]));
+			nwp.append(float(dat[8]));
+			nwm.append(float(dat[9]));
 		
 
 		self.x=x;
@@ -55,6 +57,8 @@ class PTCS:
 		self.jrev=jrev;
 		self.sigp=np.array(sigp)*10 # [A]
 		self.sigm=np.array(sigm)*10 # [A]
+		self.nwp=np.array(nwp)
+		self.nwm=np.array(nwm)
 		self.Np=Np
 		fp.close();
 	def hist(self,ax):
@@ -66,8 +70,6 @@ class PTCS:
 
 	def plot_w(self,ax):
 		lw=0.5
-		#ax.plot( (self.sigp-0.9)*0.5,"-k",linewidth=lw)
-		#ax.plot( (self.sigm-0.9)*0.5,"-k",linewidth=lw)
 		ax.plot( self.sigp,"-k",linewidth=lw)
 		ax.plot( self.sigm,"-k",linewidth=lw)
 		ax.grid(True)
@@ -80,8 +82,6 @@ class PTCS:
                     n2=n1+n;
                     sp=np.array(self.sigp[n1:n2])
                     sm=np.array(self.sigm[n1:n2])
-                    #sp-=0.9; sm-=0.9
-                    #sp*=0.5; sm*=0.5;
                     num=np.arange(n1,n2,1)
                     n1=n2
                     cl=clrs[st%nclrs]
@@ -127,9 +127,12 @@ class PTCS:
 		return plts;
 
 if __name__=="__main__":
+    plt.rcParams["font.size"]=12
 
-    fig=plt.figure(figsize=[12,4])
-    ax=fig.add_subplot(111)
+    fig1=plt.figure(figsize=[12,4])
+    fig2=plt.figure(figsize=[12,4])
+    ax1=fig1.add_subplot(111)
+    ax2=fig2.add_subplot(111)
 
     fp=open("ptc_nums.dat");
     nums=fp.readlines();
@@ -143,18 +146,43 @@ if __name__=="__main__":
 
     nums=range(num)
     Hz=[]
+    nH2O=[]
+    Hz_hist=[]
+    nH2O_hist=[]
     for num in nums:
         fname="x"+str(num)+".dat"
         ptc=PTCS(fname);
         #ptc.plot_w(ax)
         hz=np.concatenate([ptc.sigp,ptc.sigm])
+        nw=np.concatenate([ptc.nwp,ptc.nwm])
+
+        hz_hist,hz_bin=np.histogram(hz,bins=80,range=[11,16])
+        nw_hist,nw_bin=np.histogram(nw,bins=80,range=[0,4.0])
+
         Hz.append(hz)
+        nH2O.append(nw)
+        Hz_hist.append(hz_hist)
+        nH2O_hist.append(nw_hist)
+
     Hz=np.array(Hz)
-    print(np.shape(Hz))
+    nH2O=np.array(nH2O)
+    Hz_hist=np.array(Hz_hist)
+    nH2O_hist=np.array(nH2O_hist)
+
     vmin=11
     vmax=16
-    im=ax.imshow(Hz,aspect="auto",cmap="jet",interpolation="none",origin="lower",vmin=vmin,vmax=vmax)
-    plt.colorbar(im)
+    im=ax1.imshow(Hz,aspect="auto",cmap="jet",interpolation="none",origin="lower",vmin=vmin,vmax=vmax)
+    #plt.colorbar(im)
+
+    #jm=ax2.imshow(nH2O,aspect="auto",cmap="jet",interpolation="none",origin="lower",vmin=1,vmax=3.8)
+    #plt.colorbar(jm)
+    ext=[nw_bin[0],nw_bin[-1],0,len(nums)]
+    vmin=0; vmax=np.mean(Hz_hist[:])+3*np.std(Hz_hist[:])
+    #ax2.imshow(nH2O_hist,aspect="auto",cmap="jet",interpolation="bilinear",origin="lower",extent=ext,vmin=vmin,vmax=vmax)
+
+    ext=[hz_bin[0],hz_bin[-1],0,len(nums)]
+    vmin=0; vmax=np.mean(Hz_hist[:])+6*np.std(Hz_hist[:])
+    ax2.imshow(Hz_hist,aspect="auto",cmap="jet",interpolation="bilinear",origin="lower",extent=ext,vmin=vmin,vmax=vmax)
 
 
     print(np.shape(hz))
@@ -162,7 +190,7 @@ if __name__=="__main__":
 
     #ax.set_xlim([0,ptc.Np])
     #ax.set_ylim([9,16])
-    ax.tick_params(labelsize=14)
+    #ax.tick_params(labelsize=14)
 
     #fig2=plt.figure()
     #ax2=fig2.add_subplot(111)

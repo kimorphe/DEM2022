@@ -374,6 +374,16 @@ CG系の粒子間相互作用エネルギーは，次のようなLenard-Jones(LJ
 		<li> DATA/DEVフォルダにTest4と同じ条件で計算を行いdebugging</li>
 		<li> nH2Oの分布とヒストグラム表示<a href="DATA/nH2O.py">DATA/nH2O.py</a>を作成</li>
 		<li> 関連して<a href="DATA/water.py">water.py</a>にもマイナーな修正を施す</li>
+		<li> dem.cppのrestart関数を修正(nH2Oが片面しか再設定されていなかった)</li>
+		<li> wsmoothが毎時間ステップ呼び出されていた点を修正(過度にsmoothingが
+			施された状態になっていた可能性がある)</li>
+		<li> 2021年度の計算結果, SmecMu05の計算結果を自宅PCにコピー</li>
+		<li> Wetting(R.H=0.5), Wetting075(R.H.=0.75)で吸水方向の変化を示す計算を実施,(SmecMu05の結果からリスタート)</li>
+		<li>mchist.pyに加筆し，nH2Oとhz(層間距離)のhistgramの時間推移をcolormap表示可能に修正</li>
+	</ul>
+<li>01/24(Tue.)<br>
+	<ul>
+		<li> Wetting65(R.H.=0.65), Wetting20(R.H.=0.20)を計算</li>
 	</ul>
 </ul>
 <h2>References</h2>

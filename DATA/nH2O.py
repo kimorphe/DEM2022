@@ -63,7 +63,7 @@ class PTCS:
 		fp.close();
 	def hist(self,ax,bins=30):
             nw=np.concatenate([self.nwp,self.nwm])
-            ax.hist(nw,bins=bins,color="g")
+            H=ax.hist(nw,bins=bins,color="g")
             ax.grid(True)
 
 	def plot_w(self,ax):

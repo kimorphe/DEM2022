@@ -550,13 +550,8 @@ int main(){
 				Un+=add_water(PTC,0.03,3.5,sbcll,rev, prms,NaMt,&counter);
 				//printf("Un=%le\n",Un);
 				//printf(" s_tot=%lf ",(sig_tot-0.9*np*2)*0.5);
-				nH2O_tot=0.0;
-				for(j=0;j<np;j++){
-					nH2O_tot+=PTC[j].nH2O[0];
-					nH2O_tot+=PTC[j].nH2O[1];
-				}
-				nH2O_tot=0.5*nH2O_tot/np;
-				fprintf(fMClog,"%le, %le, %d, %le\n",i*prms.dt,rho_d,counter,nH2O_tot);
+				fprintf(fMClog,"%le, %le, %d\n",i*prms.dt,rho_d,counter);
+			};
 
 			for(ist=0;ist<nst;ist++) st[ist].wsmooth(rev,PTC,NaMt,prms.nw_smth);
 			for(j=0;j<nst;j++){ // START_SHEET_j
@@ -578,8 +573,8 @@ int main(){
 				sigb=NaMt.hz.eval(nH2Ob);
 				PTC[ir].sigs[0]=sigb;
 				PTC[ir].sigs[1]=sigb;
+
 			}
-			};
 		}
 		if((ismp%nsmp)==0){
 			dsxx=rev.sxx-rev.sxxb*m0;
@@ -832,7 +827,7 @@ void restart(
 		PTC[i].sigs[0]=sigp;
 		PTC[i].sigs[1]=sigm;
 		PTC[i].nH2O[0]=NaMt.hz.y2x(sigp); // molar number (head)
-		PTC[i].nH2O[1]=NaMt.hz.y2x(sigm); // molar number (head)
+		PTC[i].nH2O[0]=NaMt.hz.y2x(sigm); // molar number (head)
 	}
 
 	fgets(cbff,128,fp);
